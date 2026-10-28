@@ -9,9 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property EmploymentStatus $employment_status
+ * @property Carbon|null $status_effective_date
  */
 class Employee extends Model
 {
@@ -130,5 +134,21 @@ class Employee extends Model
     public function isActive(): bool
     {
         return $this->employment_status->isActive();
+    }
+
+    /**
+     * @return MorphMany<Alert, $this>
+     */
+    public function alerts(): MorphMany
+    {
+        return $this->morphMany(Alert::class, 'subject');
+    }
+
+    /**
+     * @return HasOne<User, $this>
+     */
+    public function user(): HasOne
+    {
+        return $this->hasOne(User::class);
     }
 }

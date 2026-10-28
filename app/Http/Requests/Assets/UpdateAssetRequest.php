@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Http\Requests\Assets;
+
+use App\Models\Asset;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateAssetRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        $asset = $this->route('asset');
+
+        return $asset instanceof Asset && $this->user()?->can('update', $asset) === true;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public function rules(): array
+    {
+        $asset = $this->route('asset');
+        $assetId = $asset instanceof Asset ? $asset->getKey() : null;
+
+        return [
+            'asset_model_id' => ['required', 'integer', Rule::exists('asset_models', 'id')->whereNull('deleted_at')],
+            'serial_number' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('assets', 'serial_number')->ignore($assetId)->whereNull('deleted_at'),
+            ],
+            'location_id' => ['nullable', 'integer', 'exists:locations,id'],
+            'supplier_id' => ['nullable', 'integer', Rule::exists('suppliers', 'id')->whereNull('deleted_at')],
+            'purchase_order' => ['nullable', 'string', 'max:50'],
+            'purchase_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'purchase_cost' => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
+            'warranty_until' => ['nullable', 'date', 'after_or_equal:purchase_date'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'asset_model_id.required' => 'Model aset wajib dipilih.',
+            'asset_model_id.exists' => 'Model aset tidak ditemukan.',
+            'serial_number.unique' => 'Nomor seri ini sudah dipakai aset lain.',
+            'purchase_date.before_or_equal' => 'Tanggal pembelian tidak boleh di masa depan.',
+            'purchase_cost.numeric' => 'Harga perolehan harus berupa angka.',
+            'warranty_until.after_or_equal' => 'Masa garansi tidak boleh sebelum tanggal pembelian.',
+        ];
+    }
+}

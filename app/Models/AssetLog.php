@@ -8,7 +8,15 @@ use Database\Factories\AssetLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property AssetAction $action
+ * @property AssetStatus|null $from_status
+ * @property AssetStatus|null $to_status
+ * @property array<string, mixed>|null $meta
+ * @property Carbon $created_at
+ */
 class AssetLog extends Model
 {
     /** @use HasFactory<AssetLogFactory> */

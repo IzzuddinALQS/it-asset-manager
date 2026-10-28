@@ -11,13 +11,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
 /**
  * @property AssetStatus $status
  * @property RetireReason|null $retire_reason
- * @property \Illuminate\Support\Carbon|null $warranty_until
- * @property \Illuminate\Support\Carbon|null $purchase_date
+ * @property Carbon|null $warranty_until
+ * @property Carbon|null $purchase_date
+ * @property Carbon|null $expected_return_date
+ * @property Carbon|null $assigned_at
+ * @property Carbon|null $retired_at
+ * @property Carbon|null $last_audited_at
  */
 class Asset extends Model
 {
@@ -187,5 +193,13 @@ class Asset extends Model
     public function isRetired(): bool
     {
         return $this->status === AssetStatus::Retired;
+    }
+
+    /**
+     * @return MorphMany<Alert, $this>
+     */
+    public function alerts(): MorphMany
+    {
+        return $this->morphMany(Alert::class, 'subject');
     }
 }

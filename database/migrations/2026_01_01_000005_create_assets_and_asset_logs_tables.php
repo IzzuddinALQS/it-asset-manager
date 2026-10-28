@@ -56,10 +56,9 @@ return new class extends Migration
             $table->jsonb('meta')->nullable();
             $table->foreignId('performed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestampTz('created_at')->useCurrent();
-
-            $table->index(['asset_id', 'created_at'], 'asset_logs_asset_idx');
         });
 
+        DB::statement('CREATE INDEX asset_logs_asset_idx ON asset_logs(asset_id, created_at DESC)');
         DB::statement("ALTER TABLE asset_logs ADD CONSTRAINT asset_logs_action_check CHECK (action IN ('created','tagged','checkout','checkin','maintenance_start','maintenance_done','component_installed','component_removed','updated','audited','retired'))");
     }
 

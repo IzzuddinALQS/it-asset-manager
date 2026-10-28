@@ -40,3 +40,20 @@ export function formatDateTime(value: string | null | undefined): string {
         minute: '2-digit',
     }).format(new Date(value));
 }
+
+/**
+ * Calendar-day distance from today in Indonesian, e.g. "besok", "dalam 3 hari", "2 hari yang lalu".
+ */
+export function relativeDays(value: string, today: Date = new Date()): string {
+    const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    const target = dateOnly
+        ? new Date(Number(dateOnly[1]), Number(dateOnly[2]) - 1, Number(dateOnly[3]))
+        : new Date(value);
+    const dayNumber = (date: Date): number =>
+        Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / 86_400_000;
+
+    return new Intl.RelativeTimeFormat('id-ID', { numeric: 'auto' }).format(
+        Math.round(dayNumber(target) - dayNumber(today)),
+        'day',
+    );
+}

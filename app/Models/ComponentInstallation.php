@@ -6,7 +6,12 @@ use Database\Factories\ComponentInstallationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon $installed_at
+ * @property Carbon|null $removed_at
+ */
 class ComponentInstallation extends Model
 {
     /** @use HasFactory<ComponentInstallationFactory> */

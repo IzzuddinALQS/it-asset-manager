@@ -9,8 +9,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property LicenseType $license_type
+ * @property string|null $product_key
+ * @property Carbon|null $expires_at
+ */
 class License extends Model
 {
     /** @use HasFactory<LicenseFactory> */
@@ -121,5 +128,13 @@ class License extends Model
         $visible = substr($key, -4);
 
         return str_repeat('•', max(0, strlen($key) - 4)).$visible;
+    }
+
+    /**
+     * @return MorphMany<Alert, $this>
+     */
+    public function alerts(): MorphMany
+    {
+        return $this->morphMany(Alert::class, 'subject');
     }
 }

@@ -11,7 +11,8 @@ enum AssetStatus: string
     case Retired = 'retired';
 
     /**
-     * Allowed status transitions. Retired is a terminal state.
+     * Allowed status transitions. Retired is a terminal state; maintenance may hand
+     * a device straight back to the holder it kept while being repaired.
      *
      * @return array<int, self>
      */
@@ -21,7 +22,7 @@ enum AssetStatus: string
             self::Pending => [self::Ready],
             self::Ready => [self::Deployed, self::Maintenance, self::Retired],
             self::Deployed => [self::Ready, self::Maintenance, self::Retired],
-            self::Maintenance => [self::Ready, self::Retired],
+            self::Maintenance => [self::Ready, self::Deployed, self::Retired],
             self::Retired => [],
         };
     }

@@ -35,6 +35,21 @@
     --radius-lg: 0.75rem;
     --radius-md: 0.5rem;
     --radius-sm: 0.375rem;
+
+    /* Font scale = Tailwind default + 5px; line heights are ratios, so they follow. */
+    --text-xs: calc(0.75rem);
+    --text-sm: calc(0.875rem);
+    --text-base: calc(1rem);
+    --text-lg: calc(1.125rem);
+    --text-xl: calc(1.25rem);
+    --text-2xl: calc(1.5rem);
+    --text-3xl: calc(1.875rem);
+    --text-4xl: calc(2.25rem);
+    --text-5xl: calc(3rem);
+    --text-6xl: calc(3.75rem);
+    --text-7xl: calc(4.5rem);
+    --text-8xl: calc(6rem);
+    --text-9xl: calc(8rem);
 }
 
 @layer base {
@@ -51,6 +66,8 @@
         background-color: var(--color-background);
         color: var(--color-foreground);
         font-family: var(--font-sans);
+        font-size: var(--text-base);
+        line-height: var(--text-base--line-height);
     }
 
     .font-tag {

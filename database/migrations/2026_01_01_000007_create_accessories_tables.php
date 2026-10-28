@@ -35,10 +35,6 @@ return new class extends Migration
             $table->text('note')->nullable();
         });
 
-        Schema::table('accessory_checkouts', function (Blueprint $table) {
-            // Partial indexes are created below: only active checkouts are queried.
-        });
-
         DB::statement('CREATE INDEX accessory_checkouts_active_idx ON accessory_checkouts(accessory_id) WHERE checked_in_at IS NULL');
         DB::statement('CREATE INDEX accessory_checkouts_employee_idx ON accessory_checkouts(employee_id) WHERE checked_in_at IS NULL');
         DB::statement('ALTER TABLE accessories ADD CONSTRAINT accessories_qty_total_check CHECK (qty_total >= 0)');

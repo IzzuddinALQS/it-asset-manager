@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property MaintenanceStatus $status
+ * @property MaintenanceType $type
+ * @property AssetStatus|null $asset_status_before
+ */
 class Maintenance extends Model
 {
     /** @use HasFactory<MaintenanceFactory> */

@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property Carbon $next_due_date
+ */
 class MaintenancePlan extends Model
 {
     /** @use HasFactory<MaintenancePlanFactory> */
@@ -69,5 +74,13 @@ class MaintenancePlan extends Model
     public function maintenances(): HasMany
     {
         return $this->hasMany(Maintenance::class, 'plan_id');
+    }
+
+    /**
+     * @return MorphMany<Alert, $this>
+     */
+    public function alerts(): MorphMany
+    {
+        return $this->morphMany(Alert::class, 'subject');
     }
 }

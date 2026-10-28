@@ -22,10 +22,6 @@ return new class extends Migration
             $table->foreignId('removed_by')->nullable()->constrained('users')->nullOnDelete();
         });
 
-        Schema::table('component_installations', function (Blueprint $table) {
-            // Partial index below: only currently installed components matter for stock.
-        });
-
         DB::statement('CREATE INDEX component_installations_active_idx ON component_installations(component_id) WHERE removed_at IS NULL');
         DB::statement('ALTER TABLE component_installations ADD CONSTRAINT component_installations_qty_check CHECK (qty > 0)');
     }

@@ -11,6 +11,7 @@ it('allows the documented asset status transitions', function (): void {
         ->and(AssetStatus::Deployed->canTransitionTo(AssetStatus::Maintenance))->toBeTrue()
         ->and(AssetStatus::Deployed->canTransitionTo(AssetStatus::Retired))->toBeTrue()
         ->and(AssetStatus::Maintenance->canTransitionTo(AssetStatus::Ready))->toBeTrue()
+        ->and(AssetStatus::Maintenance->canTransitionTo(AssetStatus::Deployed))->toBeTrue()
         ->and(AssetStatus::Maintenance->canTransitionTo(AssetStatus::Retired))->toBeTrue();
 });
 

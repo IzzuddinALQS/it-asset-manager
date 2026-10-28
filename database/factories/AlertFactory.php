@@ -18,7 +18,7 @@ class AlertFactory extends Factory
         return [
             'type' => AlertType::WarrantyExpiring,
             'severity' => AlertSeverity::Warning,
-            'subject_type' => Asset::class,
+            'subject_type' => 'asset',
             'subject_id' => Asset::factory(),
             'message' => fake()->sentence(),
             'due_date' => now()->addDays(14)->toDateString(),

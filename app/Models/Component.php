@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Component extends Model
@@ -78,5 +80,21 @@ class Component extends Model
     public function activeInstallations(): HasMany
     {
         return $this->installations()->whereNull('removed_at');
+    }
+
+    /**
+     * @return HasOne<ComponentStock, $this>
+     */
+    public function stock(): HasOne
+    {
+        return $this->hasOne(ComponentStock::class, 'component_id');
+    }
+
+    /**
+     * @return MorphMany<Alert, $this>
+     */
+    public function alerts(): MorphMany
+    {
+        return $this->morphMany(Alert::class, 'subject');
     }
 }

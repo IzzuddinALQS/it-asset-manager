@@ -71,4 +71,42 @@ class Alert extends Model
     {
         return $this->resolved_at !== null;
     }
+
+    /**
+     * Human-readable name of the subject; expects `subject` to be loaded.
+     */
+    public function subjectLabel(): ?string
+    {
+        return match (true) {
+            $this->subject instanceof Asset => $this->subject->asset_tag,
+            $this->subject instanceof Maintenance => $this->subject->ticket_number,
+            $this->subject instanceof Accessory,
+            $this->subject instanceof Component,
+            $this->subject instanceof Employee,
+            $this->subject instanceof License,
+            $this->subject instanceof MaintenancePlan => $this->subject->name,
+            default => null,
+        };
+    }
+
+    /**
+     * Page where the alert can be acted on; null when the subject is gone.
+     */
+    public function subjectUrl(): ?string
+    {
+        if ($this->subject === null) {
+            return null;
+        }
+
+        return match ($this->subject_type) {
+            'asset' => route('assets.show', $this->subject_id, false),
+            'license' => route('licenses.show', $this->subject_id, false),
+            'accessory' => route('inventory.accessories.show', $this->subject_id, false),
+            'component' => route('inventory.components.edit', $this->subject_id, false),
+            'maintenance' => route('maintenance.show', $this->subject_id, false),
+            'maintenance_plan' => route('maintenance.plans.index', absolute: false),
+            'employee' => route('directory.index', absolute: false),
+            default => null,
+        };
+    }
 }

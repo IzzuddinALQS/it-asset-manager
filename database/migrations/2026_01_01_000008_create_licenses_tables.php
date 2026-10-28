@@ -41,8 +41,6 @@ return new class extends Migration
             $table->foreignId('assigned_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestampTz('released_at')->nullable();
             $table->foreignId('released_by')->nullable()->constrained('users')->nullOnDelete();
-
-            // Partial index below: only active seats count.
         });
 
         DB::statement('CREATE INDEX license_seats_active_idx ON license_seats(license_id) WHERE released_at IS NULL');
