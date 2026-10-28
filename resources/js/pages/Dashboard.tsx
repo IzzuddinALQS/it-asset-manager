@@ -87,6 +87,7 @@ export default function Dashboard({
                     value={formatCurrency(kpis.acquisition_value)}
                     icon={Wallet}
                     hint="Aset yang belum dipensiunkan"
+                    valueClassName="text-lg sm:text-xl"
                 />
             </div>
 
