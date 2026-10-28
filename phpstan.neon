@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    level: 6
+    paths:
+        - app
+        - routes
+        - database
+        - tests
+    excludePaths:
+        - app/Providers/TypeScriptTransformerServiceProvider.php
+    checkModelProperties: false
+    treatPhpDocTypesAsCertain: false
