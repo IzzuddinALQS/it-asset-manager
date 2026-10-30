@@ -23,7 +23,16 @@ class User extends Authenticatable
     protected $fillable = [
         'employee_id',
         'role',
+        'password',
         'last_login_at',
+    ];
+
+    /**
+     * @var list<string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -34,6 +43,7 @@ class User extends Authenticatable
         return [
             'role' => Role::class,
             'last_login_at' => 'datetime',
+            'password' => 'hashed',
         ];
     }
 
@@ -48,6 +58,11 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === Role::Admin;
+    }
+
+    public function hasLocalPassword(): bool
+    {
+        return $this->password !== null;
     }
 
     public function canOperate(): bool

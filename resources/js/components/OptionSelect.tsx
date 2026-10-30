@@ -6,6 +6,8 @@ export interface SelectOption {
     value: string;
     label: string;
     hint?: string | null;
+    /** Extra data a search endpoint attaches, e.g. available stock. */
+    meta?: Record<string, unknown>;
 }
 
 /**
@@ -39,7 +41,7 @@ export default function OptionSelect({
             <SelectTrigger id={id} aria-invalid={invalid || undefined} className={className ?? 'w-full bg-white'}>
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" className="max-h-72 w-(--radix-select-trigger-width)">
                 {emptyLabel && <SelectItem value={EMPTY}>{emptyLabel}</SelectItem>}
                 {options.map((option) => (
                     <SelectItem key={option.value} value={option.value}>

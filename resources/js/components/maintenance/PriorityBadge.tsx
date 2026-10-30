@@ -1,10 +1,10 @@
-import { cn } from '@/lib/utils';
+import { ToneBadge, type BadgeTone } from '@/components/StatusBadge';
 import type { MaintenancePriority } from '@/types/maintenance';
 
-const tones: Record<MaintenancePriority, string> = {
-    high: 'bg-red-100 text-red-800',
-    medium: 'bg-amber-100 text-amber-800',
-    low: 'bg-slate-100 text-slate-600',
+const tones: Record<MaintenancePriority, BadgeTone> = {
+    high: 'danger',
+    medium: 'warning',
+    low: 'neutral',
 };
 
 export default function PriorityBadge({
@@ -17,14 +17,8 @@ export default function PriorityBadge({
     className?: string;
 }) {
     return (
-        <span
-            className={cn(
-                'inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap',
-                tones[priority],
-                className,
-            )}
-        >
+        <ToneBadge tone={tones[priority]} className={className}>
             {label}
-        </span>
+        </ToneBadge>
     );
 }

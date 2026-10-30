@@ -3,13 +3,10 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Actions\Inventory\SaveAccessory;
-use App\Enums\CategoryType;
-use App\Http\Controllers\Concerns\ProvidesInventoryOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\SaveAccessoryRequest;
 use App\Models\Accessory;
 use App\Models\AccessoryCheckout;
-use App\Models\Employee;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,14 +14,11 @@ use Inertia\Response;
 
 class AccessoryController extends Controller
 {
-    use ProvidesInventoryOptions;
-
     public function create(): Response
     {
         $this->authorize('create', Accessory::class);
 
         return Inertia::render('Inventory/AccessoryForm', [
-            ...$this->inventoryFormOptions(CategoryType::Accessory),
             'accessory' => null,
         ]);
     }
@@ -80,19 +74,6 @@ class AccessoryController extends Controller
                 'update' => $user?->can('update', $accessory) ?? false,
                 'checkout' => $user?->can('checkout', $accessory) ?? false,
             ],
-            // Loaded only when the checkout dialog opens (partial reload with `only: ['employees']`).
-            'employees' => Inertia::optional(fn (): array => Employee::query()
-                ->active()
-                ->with('department:id,name')
-                ->orderBy('name')
-                ->get(['id', 'name', 'employee_number', 'department_id'])
-                ->map(fn (Employee $employee): array => [
-                    'id' => $employee->id,
-                    'name' => $employee->name,
-                    'employee_number' => $employee->employee_number,
-                    'department' => $employee->department?->name,
-                ])
-                ->all()),
         ]);
     }
 
@@ -103,7 +84,6 @@ class AccessoryController extends Controller
         $accessory->load('stock');
 
         return Inertia::render('Inventory/AccessoryForm', [
-            ...$this->inventoryFormOptions(CategoryType::Accessory),
             'accessory' => [
                 'id' => $accessory->id,
                 'name' => $accessory->name,

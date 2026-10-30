@@ -18,6 +18,8 @@ class UpdateAsset
     private const array EDITABLE = [
         'asset_model_id',
         'serial_number',
+        'imei',
+        'phone_number',
         'location_id',
         'supplier_id',
         'purchase_order',
@@ -52,7 +54,7 @@ class UpdateAsset
                 $asset->status,
                 $asset->status,
                 $actor,
-                ['note' => 'Data aset diperbarui', 'meta' => ['changed_fields' => $changedFields]],
+                ['note' => 'Data inventaris diperbarui', 'meta' => ['changed_fields' => $changedFields]],
             );
 
             return $asset;

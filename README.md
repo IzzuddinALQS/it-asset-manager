@@ -1,7 +1,7 @@
 # IT Asset Manager
 
 Aplikasi manajemen aset IT internal: hardware, lisensi software, komponen, aksesori, dan
-maintenance. Data karyawan & SSO berasal dari **HERD** (integrasi menyusul).
+maintenance. Data karyawan & SSO berasal dari **HERD**, dengan login lokal sebagai cadangan.
 
 Proyek ini adalah penulisan ulang konsep Snipe-IT dengan cakupan yang lebih kecil dan alur
 bisnis yang tegas: Laravel 13 + Inertia + React (TypeScript) + PostgreSQL.
@@ -14,7 +14,7 @@ bisnis yang tegas: Laravel 13 + Inertia + React (TypeScript) + PostgreSQL.
 | Frontend | React 19 + TypeScript strict, Inertia.js, Vite |
 | UI | Tailwind CSS v4, shadcn/ui, TanStack Table, Lucide |
 | Database | PostgreSQL 17 |
-| Auth | Sesi; SSO HERD menyusul (sementara: dev login lokal) |
+| Auth | Sesi; SSO HERD (OIDC + PKCE) atau login lokal NIK + password |
 | Queue | Database driver + scheduler |
 | Tes | Pest 5 (backend), Vitest (frontend) |
 | Kualitas | Pint, Larastan level 6, ESLint, Prettier |
@@ -51,6 +51,8 @@ npm run lint                     # ESLint
 npm run types                    # tsc --noEmit
 npm run build                    # build produksi
 php artisan migrate:fresh --seed # reset database + data demo
+php artisan herd:sync-employees # sinkron karyawan dari HERD (terjadwal 02:00)
+php artisan users:set-password NIK --role=admin # password lokal / admin pertama
 ```
 
 ## Akun demo
@@ -61,8 +63,33 @@ php artisan migrate:fresh --seed # reset database + data demo
 | Rina Kartika | NIK24002 | technician |
 | Dewi Lestari | NIK24004 | viewer |
 
-Login masih memakai pemilih pengguna lokal (`/dev-login`) dan hanya aktif di `APP_ENV=local`.
-SSO HERD akan menggantikan ini tanpa mengubah Policy maupun controller.
+Di `APP_ENV=local` halaman masuk juga menampilkan pemilih pengguna demo (`/dev-login`).
+
+## Login
+
+Ada dua jalur masuk; keduanya memakai peran yang sama dari tabel `users`.
+
+1. **SSO HERD** — tombol *Masuk dengan HERD*. Authorization Code + PKCE ke HERD, lalu
+   `userinfo` dicocokkan ke karyawan lewat NIK (cadangan: email). Karyawan harus di-grant
+   ke aplikasi `iam` di HERD **dan** punya peran di *Pengaturan → Pengguna*.
+2. **Login lokal** — NIK + password yang disimpan di database aplikasi ini. Dipakai saat HERD
+   tidak bisa dihubungi. Admin mengatur password di *Pengaturan → Pengguna → Atur password*;
+   percobaan dibatasi 5 kali per NIK + IP.
+
+Admin pertama dibuat dari konsol: `php artisan users:set-password NIK24001 --role=admin`.
+
+### Konfigurasi HERD (`.env`)
+
+| Variabel | Isi |
+|---|---|
+| `HERD_ORIGIN` | `https://stg-herd.agroveta.co.id` |
+| `HERD_API_BASE` | `https://stg-herd.agroveta.co.id/api/v1` |
+| `HERD_TOKEN` | Sanctum machine token (dari tim IT) — untuk daftar user & sync |
+| `CONSUMER_APP` | `iam` |
+| `OAUTH_CLIENT_ID` / `OAUTH_CLIENT_SECRET` | Kredensial OAuth aplikasi (secret dari tim IT) |
+| `OAUTH_REDIRECT_URI` | Harus **persis** sama dengan yang terdaftar di HERD |
+
+Secret dan token hanya disimpan di `.env`, jangan di-commit.
 
 ## Struktur
 
@@ -99,11 +126,12 @@ docs/
 
 - [x] Fase 0 — fondasi (Laravel 13, Inertia React, Tailwind, PostgreSQL, tooling)
 - [x] Fase 1 — skema, enum, model, factory, seeder demo
-- [ ] Fase 2 — otorisasi & komponen UI bersama
-- [ ] Fase 3 — modul aset (checkout/checkin, riwayat, QR)
-- [ ] Fase 4 — komponen & aksesori
-- [ ] Fase 5 — lisensi
-- [ ] Fase 6 — maintenance
-- [ ] Fase 7 — dashboard & alert
-- [ ] Fase 8 — direktori, laporan, ekspor
-- [ ] Fase 9 — HERD (ditunda)
+- [x] Fase 2 — otorisasi & komponen UI bersama
+- [x] Fase 3 — modul aset (checkout/checkin, riwayat, QR)
+- [x] Fase 4 — komponen & aksesori
+- [x] Fase 5 — lisensi
+- [x] Fase 6 — maintenance
+- [x] Fase 7 — dashboard & alert
+- [x] Fase 8 — direktori, laporan, ekspor
+- [x] Fase 9 — HERD: SSO OIDC, login lokal, akses pengguna, sync karyawan
+- [x] Fase 10 — pengerasan (tes, lint, build, dokumentasi)

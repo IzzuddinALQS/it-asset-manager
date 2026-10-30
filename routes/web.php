@@ -3,6 +3,9 @@
 use App\Http\Controllers\Alerts\AlertController;
 use App\Http\Controllers\Alerts\ResolveAlertController;
 use App\Http\Controllers\Api\AssetLookupController;
+use App\Http\Controllers\Api\AssetSearchController;
+use App\Http\Controllers\Api\EmployeeSearchController;
+use App\Http\Controllers\Api\OptionSearchController;
 use App\Http\Controllers\Assets\AssetController;
 use App\Http\Controllers\Assets\AssetLabelController;
 use App\Http\Controllers\Assets\CheckinAssetController;
@@ -10,8 +13,11 @@ use App\Http\Controllers\Assets\CheckoutAssetController;
 use App\Http\Controllers\Assets\RetireAssetController;
 use App\Http\Controllers\Assets\TagAssetController;
 use App\Http\Controllers\Auth\DevLoginController;
+use App\Http\Controllers\Auth\HerdLoginController;
+use App\Http\Controllers\Auth\LocalLoginController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Directory\EmployeeController;
+use App\Http\Controllers\Directory\SyncEmployeesController;
 use App\Http\Controllers\Inventory\AccessoryController;
 use App\Http\Controllers\Inventory\CheckinAccessoryController;
 use App\Http\Controllers\Inventory\CheckoutAccessoryController;
@@ -30,16 +36,21 @@ use App\Http\Controllers\Maintenance\RunMaintenancePlanController;
 use App\Http\Controllers\Maintenance\UpdateMaintenanceStatusController;
 use App\Http\Controllers\Reports\ExportReportController;
 use App\Http\Controllers\Reports\ReportController;
+use App\Http\Controllers\Settings\GrantHerdUserController;
 use App\Http\Controllers\Settings\MasterDataController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\UserController;
+use App\Http\Controllers\Settings\UserPasswordController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [DevLoginController::class, 'index'])->name('login');
+    Route::post('/login', LocalLoginController::class)->name('login.local');
     Route::post('/dev-login/{user}', [DevLoginController::class, 'store'])->name('dev-login.store');
+    Route::get('/auth/redirect', [HerdLoginController::class, 'redirect'])->name('herd.redirect');
+    Route::get('/auth/callback', [HerdLoginController::class, 'callback'])->name('herd.callback');
 });
 
 Route::middleware('auth')->group(function (): void {
@@ -56,6 +67,9 @@ Route::middleware('auth')->group(function (): void {
 
     // Internal JSON endpoint used by the tag scanner; shares the web session.
     Route::get('/api/assets/by-tag/{tag}', AssetLookupController::class)->name('api.assets.by-tag');
+    Route::get('/api/assets/search', AssetSearchController::class)->name('api.assets.search');
+    Route::get('/api/employees/search', EmployeeSearchController::class)->name('api.employees.search');
+    Route::get('/api/options/{source}', OptionSearchController::class)->name('api.options.search');
 
     Route::get('/inventory', InventoryController::class)->name('inventory.index');
     Route::resource('inventory/components', ComponentController::class)
@@ -95,8 +109,11 @@ Route::middleware('auth')->group(function (): void {
 
     Route::middleware('role:admin')->prefix('settings')->name('settings.')->group(function (): void {
         Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::post('/herd-sync', SyncEmployeesController::class)->name('herd-sync');
         Route::post('/users', [UserController::class, 'store'])->name('users.store');
+        Route::post('/herd-users', GrantHerdUserController::class)->name('herd-users.grant');
         Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+        Route::put('/users/{user}/password', UserPasswordController::class)->name('users.password');
         Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
         Route::get('/master/{type}', [MasterDataController::class, 'index'])->name('master.index');

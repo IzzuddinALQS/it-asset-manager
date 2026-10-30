@@ -15,10 +15,10 @@ enum ReportType: string
     public function label(): string
     {
         return match ($this) {
-            self::AssetsByStatus => 'Aset per status',
-            self::AssetsByCategory => 'Aset per kategori',
-            self::AssetsByLocation => 'Aset per lokasi',
-            self::AssetValue => 'Nilai aset',
+            self::AssetsByStatus => 'Inventaris per status',
+            self::AssetsByCategory => 'Inventaris per kategori',
+            self::AssetsByLocation => 'Inventaris per lokasi',
+            self::AssetValue => 'Nilai inventaris',
             self::LicenseUtilization => 'Lisensi & utilisasi',
             self::MaintenanceCost => 'Biaya maintenance',
             self::Stock => 'Stok komponen & aksesori',

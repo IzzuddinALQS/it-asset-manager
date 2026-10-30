@@ -4,18 +4,11 @@ namespace App\Http\Controllers\Licenses;
 
 use App\Actions\Licenses\SaveLicense;
 use App\Actions\Licenses\SyncLicenseAlerts;
-use App\Enums\AssetStatus;
-use App\Enums\CategoryType;
 use App\Enums\LicenseType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Licenses\SaveLicenseRequest;
-use App\Models\Asset;
-use App\Models\Category;
-use App\Models\Employee;
 use App\Models\License;
 use App\Models\LicenseSeat;
-use App\Models\Manufacturer;
-use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -155,30 +148,6 @@ class LicenseController extends Controller
                 'update' => $user?->can('update', $license) ?? false,
                 'assignSeat' => $user?->can('assignSeat', $license) ?? false,
             ],
-            // Both lists load only when the assign dialog opens (partial reload).
-            'employees' => Inertia::optional(fn (): array => Employee::query()
-                ->active()
-                ->with('department:id,name')
-                ->orderBy('name')
-                ->get(['id', 'name', 'employee_number', 'department_id'])
-                ->map(fn (Employee $employee): array => [
-                    'id' => $employee->id,
-                    'name' => $employee->name,
-                    'employee_number' => $employee->employee_number,
-                    'department' => $employee->department?->name,
-                ])
-                ->all()),
-            'assets' => Inertia::optional(fn (): array => Asset::query()
-                ->whereNot('status', AssetStatus::Retired)
-                ->with('assetModel:id,name')
-                ->orderBy('asset_tag')
-                ->get(['id', 'asset_tag', 'asset_model_id'])
-                ->map(fn (Asset $asset): array => [
-                    'id' => $asset->id,
-                    'asset_tag' => $asset->asset_tag,
-                    'model' => $asset->assetModel?->name,
-                ])
-                ->all()),
         ]);
     }
 
@@ -217,27 +186,11 @@ class LicenseController extends Controller
     }
 
     /**
-     * @return array{categories: array<int, array{id: int, name: string}>, manufacturers: array<int, array{id: int, name: string}>, suppliers: array<int, array{id: int, name: string}>, licenseTypes: array<int, array{value: string, label: string}>}
+     * @return array{licenseTypes: array<int, array{value: string, label: string}>}
      */
     private function formOptions(): array
     {
         return [
-            'categories' => Category::query()
-                ->where('type', CategoryType::License)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (Category $category): array => ['id' => $category->id, 'name' => $category->name])
-                ->all(),
-            'manufacturers' => Manufacturer::query()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (Manufacturer $manufacturer): array => ['id' => $manufacturer->id, 'name' => $manufacturer->name])
-                ->all(),
-            'suppliers' => Supplier::query()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (Supplier $supplier): array => ['id' => $supplier->id, 'name' => $supplier->name])
-                ->all(),
             'licenseTypes' => array_map(
                 fn (LicenseType $type): array => ['value' => $type->value, 'label' => $type->label()],
                 LicenseType::cases(),

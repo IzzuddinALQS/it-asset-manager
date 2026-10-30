@@ -61,8 +61,8 @@ export default function RetireDialog({
                     <DialogHeader>
                         <DialogTitle>Pensiunkan {assetTag}?</DialogTitle>
                         <DialogDescription>
-                            Aset yang dipensiunkan tidak bisa dipinjamkan lagi. Pemegang saat ini dilepas dan seat
-                            lisensi pada perangkat ini dikembalikan.
+                            Inventaris yang dipensiunkan tidak bisa dipinjamkan lagi. Pemegang saat ini dilepas dan
+                            kuota lisensi pada perangkat ini dikembalikan.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -91,7 +91,7 @@ export default function RetireDialog({
                         <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
                             Batal
                         </Button>
-                        <Button type="submit" variant="destructive" disabled={processing}>
+                        <Button type="submit" variant="destructive" loading={processing}>
                             Pensiunkan
                         </Button>
                     </DialogFooter>

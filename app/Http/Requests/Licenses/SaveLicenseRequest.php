@@ -58,8 +58,8 @@ class SaveLicenseRequest extends FormRequest
             'name.required' => 'Nama lisensi wajib diisi.',
             'category_id.exists' => 'Kategori lisensi tidak ditemukan.',
             'license_type.required' => 'Jenis lisensi wajib dipilih.',
-            'seats_total.required' => 'Jumlah seat wajib diisi.',
-            'seats_total.min' => 'Jumlah seat tidak boleh kurang dari :min (seat yang sedang terpakai).',
+            'seats_total.required' => 'Jumlah kuota wajib diisi.',
+            'seats_total.min' => 'Jumlah kuota tidak boleh kurang dari :min (kuota yang sedang terpakai).',
             'expires_at.after_or_equal' => 'Tanggal kedaluwarsa tidak boleh sebelum tanggal pembelian.',
         ];
     }

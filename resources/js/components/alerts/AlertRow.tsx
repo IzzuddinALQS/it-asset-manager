@@ -7,11 +7,11 @@ import type { AlertItem } from '@/types/alerts';
 
 export default function AlertRow({ alert, onResolve }: { alert: AlertItem; onResolve?: () => void }) {
     return (
-        <li className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-start sm:gap-4">
+        <li className="flex flex-col gap-2 px-5 py-3.5 sm:flex-row sm:items-start sm:gap-4">
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                     <SeverityBadge severity={alert.severity} label={alert.severity_label} />
-                    <span className="text-xs font-medium text-slate-500">{alert.type_label}</span>
+                    <span className="text-xs font-medium text-zinc-500">{alert.type_label}</span>
                     {alert.subject_label &&
                         (alert.subject_url ? (
                             <Link
@@ -22,11 +22,11 @@ export default function AlertRow({ alert, onResolve }: { alert: AlertItem; onRes
                                 <ArrowUpRight className="size-3" />
                             </Link>
                         ) : (
-                            <span className="text-xs font-semibold text-slate-700">{alert.subject_label}</span>
+                            <span className="text-xs font-semibold text-zinc-700">{alert.subject_label}</span>
                         ))}
                 </div>
-                <p className="mt-1 text-sm text-slate-800">{alert.message}</p>
-                <p className="text-muted-foreground mt-1 text-[11px]">
+                <p className="mt-1 text-sm text-zinc-800">{alert.message}</p>
+                <p className="text-muted-foreground mt-1 text-xs">
                     {alert.due_date && (
                         <>
                             Tenggat <DateDisplay value={alert.due_date} relative /> ·{' '}

@@ -2,11 +2,12 @@ import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import CurrencyInput from '@/components/CurrencyInput';
 import FormField from '@/components/FormField';
-import OptionSelect from '@/components/OptionSelect';
+import FormSection from '@/components/FormSection';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import type { Option } from '@/types/assets';
-import type { StockFormData, StockFormOptions } from '@/types/inventory';
+import type { StockFormData } from '@/types/inventory';
 
 /**
  * Create/edit form shared by components and accessories; only the "detail"
@@ -14,7 +15,6 @@ import type { StockFormData, StockFormOptions } from '@/types/inventory';
  */
 export default function StockForm({
     initial,
-    options,
     detailField,
     detailLabel,
     usedLabel,
@@ -25,7 +25,6 @@ export default function StockForm({
     cancelUrl,
 }: {
     initial: StockFormData;
-    options: StockFormOptions;
     detailField: 'spec' | 'model';
     detailLabel: string;
     usedLabel: string;
@@ -44,13 +43,16 @@ export default function StockForm({
         submit(method, submitUrl, { preserveScroll: true });
     };
 
-    const toOptions = (items: Option[]) => items.map((item) => ({ value: String(item.id), label: item.name }));
+    // Components and accessories each keep their own category list.
+    const categoryType = detailField === 'spec' ? 'component' : 'accessory';
     const toNumber = (value: string): number | null => (value === '' ? null : Number(value));
 
     return (
-        <form onSubmit={handleSubmit} className="border-border space-y-8 rounded-xl border bg-white p-6 shadow-sm">
-            <section className="space-y-4">
-                <h2 className="text-base font-semibold text-slate-900">Identitas</h2>
+        <form
+            onSubmit={handleSubmit}
+            className="border-border bg-card divide-border divide-y overflow-hidden rounded-xl border"
+        >
+            <FormSection title="Identitas" description="Nama dan informasi dasar yang tampil di daftar.">
                 <div className="grid gap-4 md:grid-cols-2">
                     <FormField label="Nama" htmlFor="name" error={errors.name} required>
                         <Input id="name" value={data.name} onChange={(event) => setData('name', event.target.value)} />
@@ -63,30 +65,31 @@ export default function StockForm({
                         />
                     </FormField>
                     <FormField label="Kategori" htmlFor="category_id" error={errors.category_id} required>
-                        <OptionSelect
+                        <SearchSelect
                             id="category_id"
+                            url={optionsUrl('categories')}
+                            params={{ category_type: categoryType }}
                             value={data.category_id === null ? null : String(data.category_id)}
                             onChange={(value) => setData('category_id', value === null ? null : Number(value))}
-                            options={toOptions(options.categories)}
-                            placeholder="Pilih kategori"
+                            placeholder="Cari kategori"
                             invalid={errors.category_id !== undefined}
                         />
                     </FormField>
                     <FormField label="Manufaktur" htmlFor="manufacturer_id" error={errors.manufacturer_id}>
-                        <OptionSelect
+                        <SearchSelect
                             id="manufacturer_id"
+                            url={optionsUrl('manufacturers')}
                             value={data.manufacturer_id === null ? null : String(data.manufacturer_id)}
                             onChange={(value) => setData('manufacturer_id', value === null ? null : Number(value))}
-                            options={toOptions(options.manufacturers)}
                             emptyLabel="Tidak ditentukan"
                         />
                     </FormField>
                     <FormField label="Lokasi penyimpanan" htmlFor="location_id" error={errors.location_id}>
-                        <OptionSelect
+                        <SearchSelect
                             id="location_id"
+                            url={optionsUrl('locations')}
                             value={data.location_id === null ? null : String(data.location_id)}
                             onChange={(value) => setData('location_id', value === null ? null : Number(value))}
-                            options={toOptions(options.locations)}
                             emptyLabel="Belum ditentukan"
                         />
                     </FormField>
@@ -98,10 +101,9 @@ export default function StockForm({
                         />
                     </FormField>
                 </div>
-            </section>
+            </FormSection>
 
-            <section className="space-y-4">
-                <h2 className="text-base font-semibold text-slate-900">Stok</h2>
+            <FormSection title="Stok" description="Jumlah tersedia dan batas minimum sebelum peringatan.">
                 <div className="grid gap-4 md:grid-cols-2">
                     <FormField
                         label="Jumlah total"
@@ -134,13 +136,13 @@ export default function StockForm({
                         />
                     </FormField>
                 </div>
-            </section>
+            </FormSection>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse gap-2 bg-zinc-50/70 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                 <Button variant="outline" asChild>
                     <Link href={cancelUrl}>Batal</Link>
                 </Button>
-                <Button type="submit" disabled={processing}>
+                <Button type="submit" loading={processing}>
                     {submitLabel}
                 </Button>
             </div>

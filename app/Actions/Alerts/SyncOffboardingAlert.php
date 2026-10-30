@@ -31,7 +31,7 @@ class SyncOffboardingAlert
         }
 
         $held = collect([
-            $assets > 0 ? "{$assets} aset" : null,
+            $assets > 0 ? "{$assets} inventaris" : null,
             $accessories > 0 ? "{$accessories} aksesori" : null,
             $seats > 0 ? "{$seats} seat lisensi" : null,
         ])->filter()->join(', ', ' dan ');

@@ -24,6 +24,6 @@ class TagAssetController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        return back()->with('success', "Aset {$asset->fresh()->asset_tag} ditandai siap pakai.");
+        return back()->with('success', "Inventaris {$asset->fresh()->asset_tag} ditandai siap guna.");
     }
 }

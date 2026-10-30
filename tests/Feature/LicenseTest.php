@@ -31,13 +31,13 @@ it('rejects the sixth seat of a five-seat license', function (): void {
 
     actingAs($technician)
         ->post("/licenses/{$license->id}/seats", ['holder_type' => 'employee', 'employee_id' => Employee::factory()->create()->id])
-        ->assertSessionHasErrors(['employee_id' => "Seat {$license->name} sudah penuh (5 dari 5 terpakai)."]);
+        ->assertSessionHasErrors(['employee_id' => "Kuota {$license->name} sudah penuh (5 dari 5 terpakai)."]);
 
     expect($license->seatsUsed())->toBe(5)
         ->and(openLicenseAlert($license, AlertType::LicenseSeatsFull))->not->toBeNull();
 });
 
-it('returns the seat to the pool when it is released', function (): void {
+it('returns the kuota to the pool when it is released', function (): void {
     $license = License::factory()->create(['seats_total' => 1]);
     $seat = LicenseSeat::factory()->for($license)->create();
     $technician = userWithRole(Role::Technician);
@@ -55,12 +55,12 @@ it('returns the seat to the pool when it is released', function (): void {
     expect($license->seatsUsed())->toBe(1);
 });
 
-it('refuses to release a seat twice', function (): void {
+it('refuses to release a kuota twice', function (): void {
     $seat = LicenseSeat::factory()->create(['released_at' => now()]);
 
     actingAs(userWithRole(Role::Technician))
         ->post("/license-seats/{$seat->id}/release")
-        ->assertSessionHas('error', 'Seat ini sudah dilepas sebelumnya.');
+        ->assertSessionHas('error', 'Kuota ini sudah dilepas sebelumnya.');
 });
 
 it('does not give the same employee two seats of one license', function (): void {
@@ -159,7 +159,7 @@ it('keeps the stored product key when the edit form leaves it blank', function (
         ->and($license->fresh()->name)->toBe('Renamed');
 });
 
-it('does not shrink the seat total below the seats in use', function (): void {
+it('does not shrink the kuota total below the seats in use', function (): void {
     $license = License::factory()->create(['seats_total' => 5]);
     LicenseSeat::factory()->count(3)->for($license)->create();
 
@@ -168,7 +168,7 @@ it('does not shrink the seat total below the seats in use', function (): void {
         ->assertSessionHasErrors('seats_total');
 });
 
-it('lists licenses with seat usage for every role', function (Role $role): void {
+it('lists licenses with kuota usage for every role', function (Role $role): void {
     $license = License::factory()->create(['seats_total' => 4]);
     LicenseSeat::factory()->count(3)->for($license)->create();
     LicenseSeat::factory()->for($license)->create(['released_at' => now()]);
@@ -183,7 +183,7 @@ it('lists licenses with seat usage for every role', function (Role $role): void 
             ->where('summary.seats_used', 3));
 })->with(Role::cases());
 
-it('limits license management to admins and seat changes to operators', function (): void {
+it('limits license management to admins and kuota changes to operators', function (): void {
     $license = License::factory()->create();
     $seat = LicenseSeat::factory()->for($license)->create();
     $employee = Employee::factory()->create();

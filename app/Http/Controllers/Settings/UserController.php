@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Settings;
 
 use App\Enums\EmploymentStatus;
 use App\Enums\Role;
+use App\Exceptions\HerdException;
 use App\Http\Controllers\Controller;
-use App\Models\Employee;
 use App\Models\User;
+use App\Services\Herd\HerdApiClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -18,9 +19,18 @@ use Inertia\Response;
  */
 class UserController extends Controller
 {
-    public function index(): Response
+    private const int HERD_PER_PAGE = 15;
+
+    public function index(Request $request, HerdApiClient $herd): Response
     {
+        $filters = [
+            'herd_search' => trim((string) $request->query('herd_search', '')),
+            'herd_page' => max(1, (int) $request->query('herd_page', 1)),
+        ];
+
         return Inertia::render('Settings/Users', [
+            'herdFilters' => $filters,
+            'herdUsers' => Inertia::defer(fn (): array => $this->herdUsers($herd, $filters['herd_search'], $filters['herd_page'])),
             'users' => User::query()
                 ->with('employee.department:id,name')
                 ->get()
@@ -30,6 +40,7 @@ class UserController extends Controller
                     'id' => $user->id,
                     'role' => $user->role->value,
                     'role_label' => $user->role->label(),
+                    'has_password' => $user->hasLocalPassword(),
                     'last_login_at' => $user->last_login_at?->toIso8601String(),
                     'employee' => $user->employee === null ? null : [
                         'id' => $user->employee->id,
@@ -43,21 +54,47 @@ class UserController extends Controller
                 fn (Role $role): array => ['value' => $role->value, 'label' => $role->label()],
                 Role::cases(),
             ),
-            // Loaded only when the add-user dialog opens (partial reload).
-            'employees' => Inertia::optional(fn (): array => Employee::query()
-                ->active()
-                ->whereDoesntHave('user')
-                ->with('department:id,name')
-                ->orderBy('name')
-                ->get(['id', 'name', 'employee_number', 'department_id'])
-                ->map(fn (Employee $employee): array => [
-                    'id' => $employee->id,
-                    'name' => $employee->name,
-                    'employee_number' => $employee->employee_number,
-                    'department' => $employee->department?->name,
-                ])
-                ->all()),
         ]);
+    }
+
+    /**
+     * Employees granted SSO access in HERD, marked with the local role they hold here (if any).
+     *
+     * @return array{configured: bool, error: ?string, data: list<array<string, mixed>>, meta: ?array{total: int, page: int, perPage: int, lastPage: int}}
+     */
+    private function herdUsers(HerdApiClient $herd, string $search, int $page): array
+    {
+        if (! $herd->isConfigured()) {
+            return ['configured' => false, 'error' => null, 'data' => [], 'meta' => null];
+        }
+
+        try {
+            $result = $herd->applicationUsers($search, $page, self::HERD_PER_PAGE);
+        } catch (HerdException $exception) {
+            return ['configured' => true, 'error' => $exception->getMessage(), 'data' => [], 'meta' => null];
+        }
+
+        $localRoles = User::query()
+            ->join('employees', 'employees.id', '=', 'users.employee_id')
+            ->whereIn('employees.employee_number', array_column($result['data'], 'employeeNik'))
+            ->pluck('users.role', 'employees.employee_number');
+
+        return [
+            'configured' => true,
+            'error' => null,
+            'data' => array_map(fn (array $user): array => [
+                'nik' => $user['employeeNik'],
+                'name' => $user['name'],
+                'email' => $user['upn'] ?? $user['email'] ?? null,
+                'department' => $user['department'] ?? null,
+                'job_title' => $user['jobTitle'] ?? null,
+                'nik_functional' => $user['nikFunctional'] ?? null,
+                'is_active' => (bool) ($user['isActive'] ?? false),
+                'granted_at' => $user['grantedAt'] ?? null,
+                'local_role_label' => $localRoles->get($user['employeeNik'])?->label(),
+            ], $result['data']),
+            'meta' => $result['meta'],
+        ];
     }
 
     public function store(Request $request): RedirectResponse

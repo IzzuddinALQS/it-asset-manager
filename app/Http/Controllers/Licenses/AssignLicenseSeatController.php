@@ -31,6 +31,6 @@ class AssignLicenseSeatController extends Controller
 
         $holderName = $holder instanceof Employee ? $holder->name : $holder->asset_tag;
 
-        return back()->with('success', "Seat {$license->name} diberikan ke {$holderName}.");
+        return back()->with('success', "Kuota {$license->name} diberikan ke {$holderName}.");
     }
 }

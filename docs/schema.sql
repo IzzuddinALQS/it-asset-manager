@@ -49,6 +49,7 @@ CREATE TABLE users (
     employee_id     bigint NOT NULL UNIQUE REFERENCES employees(id),
     role            varchar(20) NOT NULL DEFAULT 'viewer'
         CHECK (role IN ('admin','technician','viewer')),
+    password        varchar(255),          -- login lokal (NIK + password) saat HERD tidak tersedia
     last_login_at   timestamptz,
     remember_token  varchar(100),
     created_at      timestamptz, updated_at timestamptz

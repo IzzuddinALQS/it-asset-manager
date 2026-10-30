@@ -19,17 +19,17 @@ enum AssetAction: string
     public function label(): string
     {
         return match ($this) {
-            self::Created => 'Aset dibuat',
-            self::Tagged => 'Ditandai siap pakai',
-            self::Checkout => 'Check-out',
-            self::Checkin => 'Check-in',
+            self::Created => 'Inventaris dibuat',
+            self::Tagged => 'Ditandai siap guna',
+            self::Checkout => 'Diberikan',
+            self::Checkin => 'Dikembalikan',
             self::MaintenanceStart => 'Masuk perbaikan',
             self::MaintenanceDone => 'Selesai perbaikan',
             self::ComponentInstalled => 'Komponen dipasang',
             self::ComponentRemoved => 'Komponen dilepas',
             self::Updated => 'Data diperbarui',
             self::Audited => 'Audit fisik',
-            self::Retired => 'Dipensiunkan',
+            self::Retired => 'Pensiun',
         };
     }
 }

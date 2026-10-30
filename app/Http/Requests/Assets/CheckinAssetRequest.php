@@ -32,8 +32,8 @@ class CheckinAssetRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'to_status.required' => 'Pilih kondisi aset setelah dikembalikan.',
-            'to_status.in' => 'Kondisi aset hanya boleh "Siap Pakai" atau "Perbaikan".',
+            'to_status.required' => 'Pilih kondisi inventaris setelah dikembalikan.',
+            'to_status.in' => 'Kondisi inventaris hanya boleh "Siap Guna" atau "Perbaikan".',
         ];
     }
 }

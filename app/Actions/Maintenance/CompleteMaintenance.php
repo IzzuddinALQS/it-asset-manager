@@ -53,8 +53,8 @@ class CompleteMaintenance
 
             $target = AssetStatus::from($data['return_status']);
             $defaultNote = $target === AssetStatus::Deployed
-                ? "Tiket {$maintenance->ticket_number} selesai, aset dikembalikan ke pengguna"
-                : "Tiket {$maintenance->ticket_number} selesai, aset siap pakai";
+                ? "Tiket {$maintenance->ticket_number} selesai, inventaris dikembalikan ke pengguna"
+                : "Tiket {$maintenance->ticket_number} selesai, inventaris siap guna";
 
             $this->releaseAsset->handle($maintenance, $target, $actor, $data['note'] ?? $defaultNote);
 

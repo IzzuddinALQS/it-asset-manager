@@ -2,26 +2,22 @@ import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import CurrencyInput from '@/components/CurrencyInput';
 import FormField from '@/components/FormField';
-import OptionSelect from '@/components/OptionSelect';
+import FormSection from '@/components/FormSection';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import type { AssetFormData, AssetModelOption, Option } from '@/types/assets';
+import type { AssetFormData } from '@/types/assets';
 
 export default function AssetForm({
     initial,
-    models,
-    locations,
-    suppliers,
     submitUrl,
     method,
     submitLabel,
     cancelUrl,
 }: {
     initial: AssetFormData;
-    models: AssetModelOption[];
-    locations: Option[];
-    suppliers: Option[];
     submitUrl: string;
     method: 'post' | 'put';
     submitLabel: string;
@@ -35,21 +31,22 @@ export default function AssetForm({
     };
 
     return (
-        <form onSubmit={handleSubmit} className="border-border space-y-8 rounded-xl border bg-white p-6 shadow-sm">
-            <section className="space-y-4">
-                <h2 className="text-base font-semibold text-slate-900">Identitas perangkat</h2>
+        <form
+            onSubmit={handleSubmit}
+            className="border-border bg-card divide-border divide-y overflow-hidden rounded-xl border"
+        >
+            <FormSection
+                title="Identitas perangkat"
+                description="Tag, model, dan nomor seri yang membedakan perangkat ini."
+            >
                 <div className="grid gap-4 md:grid-cols-2">
-                    <FormField label="Model aset" htmlFor="asset_model_id" error={errors.asset_model_id} required>
-                        <OptionSelect
+                    <FormField label="Model inventaris" htmlFor="asset_model_id" error={errors.asset_model_id} required>
+                        <SearchSelect
                             id="asset_model_id"
+                            url={optionsUrl('asset-models')}
                             value={data.asset_model_id === null ? null : String(data.asset_model_id)}
                             onChange={(value) => setData('asset_model_id', value === null ? null : Number(value))}
-                            options={models.map((model) => ({
-                                value: String(model.id),
-                                label: model.name,
-                                hint: model.category,
-                            }))}
-                            placeholder="Pilih model"
+                            placeholder="Cari model"
                             invalid={errors.asset_model_id !== undefined}
                         />
                     </FormField>
@@ -66,33 +63,61 @@ export default function AssetForm({
                             className="font-tag"
                         />
                     </FormField>
+                    <FormField
+                        label="IMEI"
+                        htmlFor="imei"
+                        error={errors.imei}
+                        hint="15 digit, untuk perangkat seluler. Kosongkan bila tidak ada."
+                    >
+                        <Input
+                            id="imei"
+                            inputMode="numeric"
+                            maxLength={15}
+                            value={data.imei}
+                            onChange={(event) => setData('imei', event.target.value.replace(/\D/g, ''))}
+                            className="font-tag"
+                        />
+                    </FormField>
+                    <FormField
+                        label="Nomor HP"
+                        htmlFor="phone_number"
+                        error={errors.phone_number}
+                        hint="Nomor SIM di perangkat, diawali 0."
+                    >
+                        <Input
+                            id="phone_number"
+                            type="tel"
+                            inputMode="tel"
+                            maxLength={15}
+                            value={data.phone_number}
+                            onChange={(event) => setData('phone_number', event.target.value.replace(/\D/g, ''))}
+                            placeholder="081234567890"
+                            className="font-tag"
+                        />
+                    </FormField>
                     <FormField label="Lokasi fisik" htmlFor="location_id" error={errors.location_id}>
-                        <OptionSelect
+                        <SearchSelect
                             id="location_id"
+                            url={optionsUrl('locations')}
                             value={data.location_id === null ? null : String(data.location_id)}
                             onChange={(value) => setData('location_id', value === null ? null : Number(value))}
-                            options={locations.map((location) => ({
-                                value: String(location.id),
-                                label: location.name,
-                            }))}
                             emptyLabel="Belum ditentukan"
                         />
                     </FormField>
                 </div>
-            </section>
+            </FormSection>
 
-            <section className="space-y-4">
-                <h2 className="text-base font-semibold text-slate-900">Pengadaan &amp; garansi</h2>
+            <FormSection
+                title="Pengadaan & garansi"
+                description="Data pembelian untuk nilai perolehan dan pengingat garansi."
+            >
                 <div className="grid gap-4 md:grid-cols-2">
                     <FormField label="Supplier" htmlFor="supplier_id" error={errors.supplier_id}>
-                        <OptionSelect
+                        <SearchSelect
                             id="supplier_id"
+                            url={optionsUrl('suppliers')}
                             value={data.supplier_id === null ? null : String(data.supplier_id)}
                             onChange={(value) => setData('supplier_id', value === null ? null : Number(value))}
-                            options={suppliers.map((supplier) => ({
-                                value: String(supplier.id),
-                                label: supplier.name,
-                            }))}
                             emptyLabel="Tanpa supplier"
                         />
                     </FormField>
@@ -128,22 +153,24 @@ export default function AssetForm({
                         />
                     </FormField>
                 </div>
-            </section>
+            </FormSection>
 
-            <FormField label="Catatan" htmlFor="notes" error={errors.notes}>
-                <Textarea
-                    id="notes"
-                    rows={3}
-                    value={data.notes}
-                    onChange={(event) => setData('notes', event.target.value)}
-                />
-            </FormField>
+            <FormSection title="Catatan" description="Informasi tambahan yang perlu diketahui tim IT.">
+                <FormField label="Catatan" htmlFor="notes" error={errors.notes}>
+                    <Textarea
+                        id="notes"
+                        rows={3}
+                        value={data.notes}
+                        onChange={(event) => setData('notes', event.target.value)}
+                    />
+                </FormField>
+            </FormSection>
 
-            <div className="border-border flex justify-end gap-2 border-t pt-6">
+            <div className="flex flex-col-reverse gap-2 bg-zinc-50/70 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
                 <Button variant="outline" asChild>
                     <Link href={cancelUrl}>Batal</Link>
                 </Button>
-                <Button type="submit" disabled={processing}>
+                <Button type="submit" loading={processing}>
                     {submitLabel}
                 </Button>
             </div>

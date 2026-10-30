@@ -13,8 +13,8 @@ describe('SearchInput', () => {
 
     it('searches once after the user stops typing', () => {
         const onSearch = vi.fn();
-        render(<SearchInput placeholder="Cari aset" onSearch={onSearch} />);
-        const input = screen.getByLabelText('Cari aset');
+        render(<SearchInput placeholder="Cari inventaris" onSearch={onSearch} />);
+        const input = screen.getByLabelText('Cari inventaris');
 
         fireEvent.change(input, { target: { value: 'LT' } });
         fireEvent.change(input, { target: { value: 'LT-0001 ' } });
@@ -28,13 +28,13 @@ describe('SearchInput', () => {
 
     it('searches immediately on Enter and when cleared', () => {
         const onSearch = vi.fn();
-        render(<SearchInput placeholder="Cari aset" defaultValue="dell" onSearch={onSearch} />);
+        render(<SearchInput placeholder="Cari inventaris" defaultValue="dell" onSearch={onSearch} />);
 
-        fireEvent.keyDown(screen.getByLabelText('Cari aset'), { key: 'Enter' });
+        fireEvent.keyDown(screen.getByLabelText('Cari inventaris'), { key: 'Enter' });
         expect(onSearch).toHaveBeenLastCalledWith('dell');
 
         fireEvent.click(screen.getByLabelText('Hapus pencarian'));
         expect(onSearch).toHaveBeenLastCalledWith('');
-        expect(screen.getByLabelText('Cari aset')).toHaveValue('');
+        expect(screen.getByLabelText('Cari inventaris')).toHaveValue('');
     });
 });

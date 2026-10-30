@@ -57,7 +57,7 @@ it('gives every asset in maintenance exactly one open ticket', function (): void
     expect(Maintenance::open()->count())->toBe(Asset::where('status', AssetStatus::Maintenance)->count());
 });
 
-it('never over-allocates license seats or stock', function (): void {
+it('never over-allocates license kuota or stock', function (): void {
     License::withCount('activeSeats')->get()->each(function (License $license): void {
         expect($license->active_seats_count)->toBeLessThanOrEqual($license->seats_total);
     });

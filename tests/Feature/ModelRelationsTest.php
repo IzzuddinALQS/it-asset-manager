@@ -41,7 +41,7 @@ it('encrypts the license product key at rest and masks it for display', function
         ->and($license->maskedProductKey())->not->toContain('ABCDE');
 });
 
-it('counts only active license seats as used', function (): void {
+it('counts only active license kuota as used', function (): void {
     $license = License::factory()->create(['seats_total' => 3]);
     LicenseSeat::factory()->count(2)->for($license)->create();
     LicenseSeat::factory()->for($license)->create(['released_at' => now()]);

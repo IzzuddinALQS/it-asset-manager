@@ -31,6 +31,6 @@ class CheckoutAssetController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        return back()->with('success', "Aset {$asset->asset_tag} berhasil di-check-out.");
+        return back()->with('success', "Inventaris {$asset->asset_tag} berhasil diberikan.");
     }
 }

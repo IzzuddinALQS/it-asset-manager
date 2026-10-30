@@ -1,12 +1,13 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { CheckCircle2, CircuitBoard, Hammer, PackageSearch, Plus, Trash2, X } from 'lucide-react';
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import CurrencyInput from '@/components/CurrencyInput';
 import DateDisplay from '@/components/DateDisplay';
 import EmptyState from '@/components/EmptyState';
 import FormField from '@/components/FormField';
 import PriorityBadge from '@/components/maintenance/PriorityBadge';
-import OptionSelect from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
 import PageHeader from '@/components/PageHeader';
 import StatusBadge from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
@@ -23,14 +24,12 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout';
 import { useConfirm } from '@/lib/confirm';
 import { cn, formatCurrency } from '@/lib/utils';
-import type { ComponentOption } from '@/types/inventory';
 import type { MaintenanceDetail } from '@/types/maintenance';
 
 interface ShowProps {
     maintenance: MaintenanceDetail;
     canReturnToHolder: boolean;
     can: { move: boolean; complete: boolean; cancel: boolean };
-    componentOptions?: ComponentOption[];
 }
 
 export default function MaintenanceShow(props: ShowProps) {
@@ -42,7 +41,7 @@ export default function MaintenanceShow(props: ShowProps) {
 }
 
 /** Rendered inside AppLayout so `useConfirm` has its provider. */
-function MaintenanceDetailPage({ maintenance, canReturnToHolder, can, componentOptions }: ShowProps) {
+function MaintenanceDetailPage({ maintenance, canReturnToHolder, can }: ShowProps) {
     const confirm = useConfirm();
     const [completeOpen, setCompleteOpen] = useState(
         () => can.complete && new URLSearchParams(window.location.search).has('complete'),
@@ -107,7 +106,7 @@ function MaintenanceDetailPage({ maintenance, canReturnToHolder, can, componentO
                 }
             />
 
-            <div className="border-border mb-6 flex flex-wrap items-center gap-3 rounded-xl border bg-white px-5 py-4 shadow-sm">
+            <div className="border-border bg-card mb-6 flex flex-wrap items-center gap-3 rounded-xl border px-5 py-4">
                 <StatusBadge status={maintenance.status} label={maintenance.status_label} className="text-sm" />
                 <PriorityBadge priority={maintenance.priority} label={`Prioritas ${maintenance.priority_label}`} />
                 {maintenance.completed_at && (
@@ -117,7 +116,7 @@ function MaintenanceDetailPage({ maintenance, canReturnToHolder, can, componentO
                 )}
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-3 [&>*]:min-w-0">
                 <div className="space-y-6 lg:col-span-2">
                     <Panel title="Detail tiket">
                         <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
@@ -164,7 +163,7 @@ function MaintenanceDetailPage({ maintenance, canReturnToHolder, can, componentO
                                 {maintenance.components.map((component) => (
                                     <li key={component.id} className="flex items-center justify-between gap-3 py-3">
                                         <div>
-                                            <p className="text-sm font-medium text-slate-800">
+                                            <p className="text-sm font-medium text-zinc-800">
                                                 {component.qty}× {component.name}
                                             </p>
                                             {component.spec && (
@@ -179,10 +178,10 @@ function MaintenanceDetailPage({ maintenance, canReturnToHolder, can, componentO
                     </Panel>
                 </div>
 
-                <Panel title="Aset">
+                <Panel title="Inventaris">
                     <Link
                         href={`/assets/${maintenance.asset.id}`}
-                        className="font-tag text-base font-semibold text-slate-900 hover:underline"
+                        className="font-tag text-base font-semibold text-zinc-900 hover:underline"
                     >
                         {maintenance.asset.asset_tag}
                     </Link>
@@ -217,7 +216,6 @@ function MaintenanceDetailPage({ maintenance, canReturnToHolder, can, componentO
                     onOpenChange={setCompleteOpen}
                     maintenance={maintenance}
                     canReturnToHolder={canReturnToHolder}
-                    componentOptions={componentOptions}
                 />
             )}
         </>
@@ -236,13 +234,11 @@ function CompleteDialog({
     onOpenChange,
     maintenance,
     canReturnToHolder,
-    componentOptions,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     maintenance: MaintenanceDetail;
     canReturnToHolder: boolean;
-    componentOptions?: ComponentOption[];
 }) {
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm<CompleteForm>({
         return_status: canReturnToHolder ? 'deployed' : 'ready',
@@ -252,10 +248,6 @@ function CompleteDialog({
     });
 
     const changeOpen = (next: boolean): void => {
-        if (next && componentOptions === undefined) {
-            router.reload({ only: ['componentOptions'] });
-        }
-
         if (!next) {
             reset();
             clearErrors();
@@ -263,14 +255,6 @@ function CompleteDialog({
 
         onOpenChange(next);
     };
-
-    // Opened straight from the board (`?complete=1`) skips `changeOpen`, so load the parts list here.
-    useEffect(() => {
-        if (open && componentOptions === undefined) {
-            router.reload({ only: ['componentOptions'] });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     const submit = (event: FormEvent): void => {
         event.preventDefault();
@@ -298,12 +282,12 @@ function CompleteDialog({
                         </DialogDescription>
                     </DialogHeader>
 
-                    <FormField label="Aset kembali ke" error={errors.return_status} required>
-                        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Status aset">
+                    <FormField label="Inventaris kembali ke" error={errors.return_status} required>
+                        <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Status inventaris">
                             {(
                                 [
                                     ['deployed', 'Pengguna', maintenance.asset.holder ?? 'tidak ada pemegang'],
-                                    ['ready', 'Siap Pakai', 'kembali ke gudang IT'],
+                                    ['ready', 'Siap Guna', 'kembali ke gudang IT'],
                                 ] as const
                             ).map(([value, label, hint]) => {
                                 const disabled = value === 'deployed' && !canReturnToHolder;
@@ -320,7 +304,7 @@ function CompleteDialog({
                                             'rounded-lg border px-3 py-2 text-left text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                                             data.return_status === value
                                                 ? 'border-primary bg-primary/5 text-primary'
-                                                : 'border-border text-slate-600 hover:bg-slate-50',
+                                                : 'border-border text-zinc-600 hover:bg-zinc-50',
                                         )}
                                     >
                                         <span className="block font-medium">{label}</span>
@@ -341,7 +325,7 @@ function CompleteDialog({
 
                     <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-slate-700">Komponen terpakai</p>
+                            <p className="text-sm font-medium text-zinc-700">Komponen terpakai</p>
                             <Button
                                 type="button"
                                 size="sm"
@@ -355,25 +339,21 @@ function CompleteDialog({
                         </div>
                         {data.components.length === 0 && (
                             <p className="text-muted-foreground text-xs">
-                                Tidak ada. Komponen yang ditambahkan diambil dari stok dan dipasang ke aset.
+                                Tidak ada. Komponen yang ditambahkan diambil dari stok dan dipasang ke inventaris.
                             </p>
                         )}
                         {data.components.map((row, index) => (
                             <div key={index} className="flex items-start gap-2">
                                 <div className="min-w-0 flex-1">
-                                    <OptionSelect
+                                    <SearchSelect
+                                        url={optionsUrl('components')}
                                         value={row.component_id === null ? null : String(row.component_id)}
                                         onChange={(value) =>
                                             updateComponent(index, {
                                                 component_id: value === null ? null : Number(value),
                                             })
                                         }
-                                        options={(componentOptions ?? []).map((component) => ({
-                                            value: String(component.id),
-                                            label: component.name,
-                                            hint: `stok ${component.qty_available}`,
-                                        }))}
-                                        placeholder={componentOptions === undefined ? 'Memuat…' : 'Pilih komponen'}
+                                        placeholder="Cari komponen"
                                         invalid={fieldErrors[`components.${index}.component_id`] !== undefined}
                                     />
                                     {fieldErrors[`components.${index}.component_id`] && (
@@ -427,7 +407,7 @@ function CompleteDialog({
                         <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" loading={processing}>
                             Selesaikan tiket
                         </Button>
                     </DialogFooter>
@@ -439,8 +419,8 @@ function CompleteDialog({
 
 function Panel({ title, children }: { title: string; children: ReactNode }) {
     return (
-        <section className="border-border rounded-xl border bg-white p-5 shadow-sm">
-            <h2 className="mb-4 text-base font-semibold text-slate-900">{title}</h2>
+        <section className="border-border bg-card rounded-xl border p-5">
+            <h2 className="mb-4 text-[15px] font-semibold text-zinc-950">{title}</h2>
             {children}
         </section>
     );
@@ -449,8 +429,8 @@ function Panel({ title, children }: { title: string; children: ReactNode }) {
 function Detail({ label, className, children }: { label: string; className?: string; children: ReactNode }) {
     return (
         <div className={className}>
-            <dt className="text-muted-foreground text-xs">{label}</dt>
-            <dd className="mt-1 text-sm text-slate-800">{children}</dd>
+            <dt className="text-muted-foreground text-[13px]">{label}</dt>
+            <dd className="mt-1 text-sm font-medium text-zinc-900">{children}</dd>
         </div>
     );
 }

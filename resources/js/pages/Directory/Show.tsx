@@ -53,25 +53,30 @@ export default function DirectoryShow({
                 actions={<StatusBadge status={employee.employment_status} className="text-xs" />}
             />
 
-            <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-                <section className="border-border h-fit rounded-xl border bg-white p-5 shadow-sm">
-                    <h2 className="mb-4 text-sm font-semibold text-slate-900">Data karyawan</h2>
+            <div className="grid gap-6 lg:grid-cols-[320px_1fr] [&>*]:min-w-0">
+                <section className="border-border bg-card h-fit rounded-xl border p-5">
+                    <h2 className="mb-4 text-[15px] font-semibold text-zinc-950">Data karyawan</h2>
                     <dl className="space-y-3 text-sm">
                         {details.map(([label, value]) => (
                             <div key={label} className="flex justify-between gap-4">
                                 <dt className="text-muted-foreground shrink-0">{label}</dt>
-                                <dd className="min-w-0 text-right break-words text-slate-800">{value}</dd>
+                                <dd className="min-w-0 text-right font-medium break-words text-zinc-900">{value}</dd>
                             </div>
                         ))}
                     </dl>
                 </section>
 
                 <div className="space-y-6">
-                    <HoldingSection icon={HardDrive} title="Aset" count={assets.length} empty="Tidak memegang aset.">
+                    <HoldingSection
+                        icon={HardDrive}
+                        title="Inventaris"
+                        count={assets.length}
+                        empty="Tidak memegang inventaris."
+                    >
                         {assets.map((asset) => (
                             <li key={asset.id} className="flex items-center justify-between gap-3 px-5 py-3">
                                 <Link href={`/assets/${asset.id}`} className="min-w-0 hover:underline">
-                                    <p className="font-tag text-sm font-semibold text-slate-800">{asset.asset_tag}</p>
+                                    <p className="font-tag text-sm font-semibold text-zinc-800">{asset.asset_tag}</p>
                                     <p className="text-muted-foreground truncate text-xs">
                                         {[asset.model, asset.category, asset.serial_number].filter(Boolean).join(' · ')}
                                     </p>
@@ -96,11 +101,11 @@ export default function DirectoryShow({
                                     href={`/inventory/accessories/${checkout.accessory_id}`}
                                     className="min-w-0 hover:underline"
                                 >
-                                    <p className="truncate text-sm font-medium text-slate-800">{checkout.name}</p>
+                                    <p className="truncate text-sm font-medium text-zinc-800">{checkout.name}</p>
                                     <p className="text-muted-foreground truncate text-xs">{checkout.model}</p>
                                 </Link>
                                 <div className="shrink-0 text-right text-xs">
-                                    <p className="font-semibold text-slate-800 tabular-nums">{checkout.qty} unit</p>
+                                    <p className="font-semibold text-zinc-800 tabular-nums">{checkout.qty} unit</p>
                                     <DateDisplay value={checkout.checked_out_at} className="text-muted-foreground" />
                                 </div>
                             </li>
@@ -111,12 +116,12 @@ export default function DirectoryShow({
                         icon={KeyRound}
                         title="Lisensi"
                         count={licenses.length}
-                        empty="Tidak memakai seat lisensi."
+                        empty="Tidak memakai kuota lisensi."
                     >
                         {licenses.map((seat) => (
                             <li key={seat.id} className="flex items-center justify-between gap-3 px-5 py-3">
                                 <Link href={`/licenses/${seat.license_id}`} className="min-w-0 hover:underline">
-                                    <p className="truncate text-sm font-medium text-slate-800">{seat.name}</p>
+                                    <p className="truncate text-sm font-medium text-zinc-800">{seat.name}</p>
                                     <p className="text-muted-foreground text-xs">
                                         Berlaku hingga <DateDisplay value={seat.expires_at} />
                                     </p>
@@ -148,10 +153,10 @@ function HoldingSection({
     children: ReactNode;
 }) {
     return (
-        <section className="border-border overflow-hidden rounded-xl border bg-white shadow-sm">
+        <section className="border-border bg-card overflow-hidden rounded-xl border">
             <header className="border-border flex items-center gap-2 border-b px-5 py-3">
-                <Icon className="size-4 text-slate-500" />
-                <h2 className="text-sm font-semibold text-slate-900">{title}</h2>
+                <Icon className="size-4 text-zinc-500" />
+                <h2 className="text-[15px] font-semibold text-zinc-950">{title}</h2>
                 <span className="text-muted-foreground ml-auto text-xs tabular-nums">{count}</span>
             </header>
             {count === 0 ? (

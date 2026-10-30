@@ -11,16 +11,16 @@ class LicenseSeatException extends RuntimeException
 {
     public static function seatsFull(string $licenseName, int $seatsTotal): self
     {
-        return new self("Seat {$licenseName} sudah penuh ({$seatsTotal} dari {$seatsTotal} terpakai).");
+        return new self("Kuota {$licenseName} sudah penuh ({$seatsTotal} dari {$seatsTotal} terpakai).");
     }
 
     public static function alreadyAssigned(string $holder): self
     {
-        return new self("{$holder} sudah memegang seat lisensi ini.");
+        return new self("{$holder} sudah memegang kuota lisensi ini.");
     }
 
     public static function alreadyReleased(): self
     {
-        return new self('Seat ini sudah dilepas sebelumnya.');
+        return new self('Kuota ini sudah dilepas sebelumnya.');
     }
 }

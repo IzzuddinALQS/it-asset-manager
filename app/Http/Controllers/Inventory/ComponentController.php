@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Actions\Inventory\SaveComponent;
-use App\Enums\CategoryType;
-use App\Http\Controllers\Concerns\ProvidesInventoryOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\SaveComponentRequest;
 use App\Models\Component;
@@ -14,14 +12,11 @@ use Inertia\Response;
 
 class ComponentController extends Controller
 {
-    use ProvidesInventoryOptions;
-
     public function create(): Response
     {
         $this->authorize('create', Component::class);
 
         return Inertia::render('Inventory/ComponentForm', [
-            ...$this->inventoryFormOptions(CategoryType::Component),
             'component' => null,
         ]);
     }
@@ -42,7 +37,6 @@ class ComponentController extends Controller
         $component->load('stock');
 
         return Inertia::render('Inventory/ComponentForm', [
-            ...$this->inventoryFormOptions(CategoryType::Component),
             'component' => [
                 'id' => $component->id,
                 'name' => $component->name,

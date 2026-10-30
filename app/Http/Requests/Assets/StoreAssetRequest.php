@@ -26,6 +26,8 @@ class StoreAssetRequest extends FormRequest
                 'max:100',
                 Rule::unique('assets', 'serial_number')->whereNull('deleted_at'),
             ],
+            'imei' => ['nullable', 'digits:15', Rule::unique('assets', 'imei')->whereNull('deleted_at')],
+            'phone_number' => ['nullable', 'string', 'regex:/^0[0-9]{8,14}$/'],
             'location_id' => ['nullable', 'integer', 'exists:locations,id'],
             'supplier_id' => ['nullable', 'integer', Rule::exists('suppliers', 'id')->whereNull('deleted_at')],
             'purchase_order' => ['nullable', 'string', 'max:50'],
@@ -42,9 +44,12 @@ class StoreAssetRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'asset_model_id.required' => 'Model aset wajib dipilih.',
-            'asset_model_id.exists' => 'Model aset tidak ditemukan.',
-            'serial_number.unique' => 'Nomor seri ini sudah dipakai aset lain.',
+            'asset_model_id.required' => 'Model inventaris wajib dipilih.',
+            'asset_model_id.exists' => 'Model inventaris tidak ditemukan.',
+            'serial_number.unique' => 'Nomor seri ini sudah dipakai inventaris lain.',
+            'imei.digits' => 'IMEI harus 15 digit angka.',
+            'imei.unique' => 'IMEI ini sudah dipakai inventaris lain.',
+            'phone_number.regex' => 'Nomor HP diawali 0 dan berisi 9–15 digit angka, mis. 081234567890.',
             'purchase_date.before_or_equal' => 'Tanggal pembelian tidak boleh di masa depan.',
             'purchase_cost.numeric' => 'Harga perolehan harus berupa angka.',
             'warranty_until.after_or_equal' => 'Masa garansi tidak boleh sebelum tanggal pembelian.',

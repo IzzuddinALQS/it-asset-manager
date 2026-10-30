@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\Herd\HerdOidcClient;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -12,15 +13,13 @@ use Inertia\Response;
 
 class DevLoginController extends Controller
 {
-    public function index(Request $request): Response|RedirectResponse
+    public function index(Request $request, HerdOidcClient $oidc): Response|RedirectResponse
     {
-        abort_unless(app()->environment(['local', 'testing']), 404);
-
         if ($request->user() !== null) {
             return redirect()->route('dashboard');
         }
 
-        $users = User::query()
+        $users = ! app()->environment(['local', 'testing']) ? [] : User::query()
             ->with('employee.department', 'employee.location')
             ->orderBy('role')
             ->get()
@@ -36,6 +35,7 @@ class DevLoginController extends Controller
 
         return Inertia::render('Auth/DevLogin', [
             'users' => $users,
+            'ssoEnabled' => $oidc->isConfigured(),
         ]);
     }
 

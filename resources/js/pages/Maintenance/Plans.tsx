@@ -4,7 +4,9 @@ import { useState, type FormEvent } from 'react';
 import DateDisplay from '@/components/DateDisplay';
 import EmptyState from '@/components/EmptyState';
 import FormField from '@/components/FormField';
-import OptionSelect from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
+import { ToneBadge } from '@/components/StatusBadge';
 import PageHeader from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -20,15 +22,11 @@ import { Input } from '@/components/ui/input';
 import AppLayout from '@/layouts/AppLayout';
 import { useConfirm } from '@/lib/confirm';
 import { cn, relativeDays } from '@/lib/utils';
-import type { Option } from '@/types/assets';
-import type { MaintenancePlanRow, SupplierOption } from '@/types/maintenance';
+import type { MaintenancePlanRow } from '@/types/maintenance';
 
 interface PlansProps {
     plans: MaintenancePlanRow[];
     warningDays: number;
-    categories: Option[];
-    locations: Option[];
-    suppliers: SupplierOption[];
     can: { manage: boolean };
 }
 
@@ -48,14 +46,14 @@ function daysUntil(date: string): number {
 }
 
 /** Rendered inside AppLayout so `useConfirm` has its provider. */
-function PlansPage({ plans, warningDays, categories, locations, suppliers, can }: PlansProps) {
+function PlansPage({ plans, warningDays, can }: PlansProps) {
     const confirm = useConfirm();
     const [editing, setEditing] = useState<MaintenancePlanRow | 'new' | null>(null);
 
     const run = async (plan: MaintenancePlanRow): Promise<void> => {
         const confirmed = await confirm({
             title: `Jalankan ${plan.name}?`,
-            description: `${plan.covered_assets} aset yang tercakup akan dibuatkan tiket preventif dan berstatus Perbaikan. Jadwal maju ${plan.interval_months} bulan.`,
+            description: `${plan.covered_assets} inventaris yang tercakup akan dibuatkan tiket preventif dan berstatus Perbaikan. Jadwal maju ${plan.interval_months} bulan.`,
             confirmLabel: 'Buat tiket',
         });
 
@@ -70,7 +68,7 @@ function PlansPage({ plans, warningDays, categories, locations, suppliers, can }
 
             <PageHeader
                 title="Jadwal preventif"
-                description={`Perawatan berkala per kategori aset. Jadwal ditandai jatuh tempo mulai H-${warningDays}.`}
+                description={`Perawatan berkala per kategori inventaris. Jadwal ditandai jatuh tempo mulai H-${warningDays}.`}
                 breadcrumbs={[
                     { label: 'Dashboard', href: '/dashboard' },
                     { label: 'Maintenance', href: '/maintenance' },
@@ -97,29 +95,20 @@ function PlansPage({ plans, warningDays, categories, locations, suppliers, can }
                             <article
                                 key={plan.id}
                                 className={cn(
-                                    'border-border flex flex-col rounded-xl border bg-white p-5 shadow-sm',
+                                    'border-border bg-card flex flex-col rounded-xl border p-5',
                                     !plan.is_active && 'opacity-60',
                                     isDue && 'border-amber-300',
                                 )}
                             >
                                 <div className="flex items-start justify-between gap-2">
-                                    <h2 className="font-semibold text-slate-900">{plan.name}</h2>
+                                    <h2 className="text-[15px] font-semibold text-zinc-950">{plan.name}</h2>
                                     {!plan.is_active ? (
-                                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-600">
-                                            Nonaktif
-                                        </span>
+                                        <ToneBadge tone="neutral">Nonaktif</ToneBadge>
                                     ) : (
                                         isDue && (
-                                            <span
-                                                className={cn(
-                                                    'rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap',
-                                                    daysLeft < 0
-                                                        ? 'bg-red-100 text-red-800'
-                                                        : 'bg-amber-100 text-amber-800',
-                                                )}
-                                            >
+                                            <ToneBadge tone={daysLeft < 0 ? 'danger' : 'warning'}>
                                                 {daysLeft < 0 ? 'Terlambat' : 'Jatuh tempo'}
-                                            </span>
+                                            </ToneBadge>
                                         )
                                     )}
                                 </div>
@@ -128,8 +117,8 @@ function PlansPage({ plans, warningDays, categories, locations, suppliers, can }
                                 </p>
                                 <dl className="mt-4 grid grid-cols-2 gap-3 text-sm">
                                     <div>
-                                        <dt className="text-muted-foreground text-xs">Berikutnya</dt>
-                                        <dd className="text-slate-800">
+                                        <dt className="text-muted-foreground text-[13px]">Berikutnya</dt>
+                                        <dd className="font-medium text-zinc-900">
                                             <DateDisplay value={plan.next_due_date} />
                                             <span className="text-muted-foreground block text-xs">
                                                 {relativeDays(plan.next_due_date)}
@@ -137,12 +126,12 @@ function PlansPage({ plans, warningDays, categories, locations, suppliers, can }
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-muted-foreground text-xs">Interval</dt>
-                                        <dd className="text-slate-800">{plan.interval_months} bulan</dd>
+                                        <dt className="text-muted-foreground text-[13px]">Interval</dt>
+                                        <dd className="font-medium text-zinc-900">{plan.interval_months} bulan</dd>
                                     </div>
                                     <div>
-                                        <dt className="text-muted-foreground text-xs">Aset tercakup</dt>
-                                        <dd className="text-slate-800">
+                                        <dt className="text-muted-foreground text-[13px]">Inventaris tercakup</dt>
+                                        <dd className="font-medium text-zinc-900">
                                             {plan.covered_assets}
                                             {plan.open_tickets > 0 && (
                                                 <span className="text-muted-foreground text-xs">
@@ -153,8 +142,10 @@ function PlansPage({ plans, warningDays, categories, locations, suppliers, can }
                                         </dd>
                                     </div>
                                     <div>
-                                        <dt className="text-muted-foreground text-xs">PIC / vendor</dt>
-                                        <dd className="text-slate-800">{plan.supplier ?? plan.pic ?? '—'}</dd>
+                                        <dt className="text-muted-foreground text-[13px]">PIC / vendor</dt>
+                                        <dd className="font-medium text-zinc-900">
+                                            {plan.supplier ?? plan.pic ?? '—'}
+                                        </dd>
                                     </div>
                                 </dl>
                                 {can.manage && (
@@ -182,9 +173,6 @@ function PlansPage({ plans, warningDays, categories, locations, suppliers, can }
                     key={editing === 'new' ? 'new' : editing.id}
                     plan={editing === 'new' ? null : editing}
                     onClose={() => setEditing(null)}
-                    categories={categories}
-                    locations={locations}
-                    suppliers={suppliers}
                 />
             )}
         </>
@@ -202,19 +190,7 @@ interface PlanForm {
     is_active: boolean;
 }
 
-function PlanDialog({
-    plan,
-    onClose,
-    categories,
-    locations,
-    suppliers,
-}: {
-    plan: MaintenancePlanRow | null;
-    onClose: () => void;
-    categories: Option[];
-    locations: Option[];
-    suppliers: SupplierOption[];
-}) {
+function PlanDialog({ plan, onClose }: { plan: MaintenancePlanRow | null; onClose: () => void }) {
     const { data, setData, post, put, processing, errors } = useForm<PlanForm>({
         name: plan?.name ?? '',
         category_id: plan?.category_id ?? null,
@@ -244,7 +220,7 @@ function PlanDialog({
                     <DialogHeader>
                         <DialogTitle>{plan === null ? 'Tambah jadwal preventif' : `Edit ${plan.name}`}</DialogTitle>
                         <DialogDescription>
-                            Jadwal mencakup semua aset aktif di kategori (dan lokasi) yang dipilih.
+                            Jadwal mencakup semua inventaris aktif di kategori (dan lokasi) yang dipilih.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -258,27 +234,28 @@ function PlanDialog({
                     </FormField>
 
                     <div className="grid gap-4 sm:grid-cols-2">
-                        <FormField label="Kategori aset" htmlFor="category_id" error={errors.category_id} required>
-                            <OptionSelect
+                        <FormField
+                            label="Kategori inventaris"
+                            htmlFor="category_id"
+                            error={errors.category_id}
+                            required
+                        >
+                            <SearchSelect
                                 id="category_id"
+                                url={optionsUrl('categories')}
+                                params={{ category_type: 'asset' }}
                                 value={data.category_id === null ? null : String(data.category_id)}
                                 onChange={(value) => setData('category_id', value === null ? null : Number(value))}
-                                options={categories.map((category) => ({
-                                    value: String(category.id),
-                                    label: category.name,
-                                }))}
+                                placeholder="Cari kategori"
                                 invalid={errors.category_id !== undefined}
                             />
                         </FormField>
                         <FormField label="Lokasi" htmlFor="location_id" error={errors.location_id}>
-                            <OptionSelect
+                            <SearchSelect
                                 id="location_id"
+                                url={optionsUrl('locations')}
                                 value={data.location_id === null ? null : String(data.location_id)}
                                 onChange={(value) => setData('location_id', value === null ? null : Number(value))}
-                                options={locations.map((location) => ({
-                                    value: String(location.id),
-                                    label: location.name,
-                                }))}
                                 emptyLabel="Semua lokasi"
                             />
                         </FormField>
@@ -314,21 +291,17 @@ function PlanDialog({
                             <Input id="pic" value={data.pic} onChange={(event) => setData('pic', event.target.value)} />
                         </FormField>
                         <FormField label="Vendor" htmlFor="plan_supplier_id" error={errors.supplier_id}>
-                            <OptionSelect
+                            <SearchSelect
                                 id="plan_supplier_id"
+                                url={optionsUrl('suppliers')}
                                 value={data.supplier_id === null ? null : String(data.supplier_id)}
                                 onChange={(value) => setData('supplier_id', value === null ? null : Number(value))}
-                                options={suppliers.map((supplier) => ({
-                                    value: String(supplier.id),
-                                    label: supplier.name,
-                                    hint: supplier.is_service_vendor ? 'vendor servis' : null,
-                                }))}
                                 emptyLabel="Internal IT"
                             />
                         </FormField>
                     </div>
 
-                    <label className="flex items-center gap-2 text-sm text-slate-700">
+                    <label className="flex items-center gap-2 text-sm text-zinc-700">
                         <Checkbox
                             checked={data.is_active}
                             onCheckedChange={(checked) => setData('is_active', checked === true)}
@@ -340,7 +313,7 @@ function PlanDialog({
                         <Button type="button" variant="outline" onClick={onClose}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" loading={processing}>
                             Simpan
                         </Button>
                     </DialogFooter>

@@ -90,18 +90,16 @@ class HandleInertiaRequests extends Middleware
         $sections = [
             'Utama' => [
                 ['Dashboard', 'dashboard', 'dashboard', true],
-                ['Aset', 'assets.index', 'assets', $user->can('viewAny', Asset::class)],
+                ['Inventaris', 'assets.index', 'assets', $user->can('viewAny', Asset::class)],
                 ['Lisensi', 'licenses.index', 'licenses', $user->can('viewAny', License::class)],
                 ['Maintenance', 'maintenance.index', 'maintenance', $user->can('viewAny', Maintenance::class)],
-            ],
-            'Inventaris' => [
                 ['Komponen & Aksesori', 'inventory.index', 'inventory', $user->can('viewAny', Component::class)],
-                ['Direktori Karyawan', 'directory.index', 'directory', $user->can('viewAny', Employee::class)],
-                ['Laporan', 'reports.index', 'reports', true],
             ],
             'Sistem' => [
+                ['Direktori Karyawan', 'directory.index', 'directory', $user->can('viewAny', Employee::class)],
+                ['Laporan', 'reports.index', 'reports', true],
                 ['Peringatan', 'alerts.index', 'alerts', $user->can('viewAny', Alert::class)],
-                ['Pengaturan', 'settings.index', 'settings', $user->role->canManage()],
+                ['Master Data', 'settings.index', 'settings', $user->role->canManage()],
             ],
         ];
 

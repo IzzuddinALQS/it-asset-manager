@@ -3,6 +3,7 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { AlertTriangle, Boxes, Pencil, Plus } from 'lucide-react';
 import DataTable from '@/components/DataTable';
 import EmptyState from '@/components/EmptyState';
+import FilterTabs from '@/components/FilterTabs';
 import PageHeader from '@/components/PageHeader';
 import Pagination, { type Paginator } from '@/components/Pagination';
 import SearchInput from '@/components/SearchInput';
@@ -55,7 +56,7 @@ export default function InventoryIndex({
             cell: ({ row }) => {
                 const content = (
                     <>
-                        <p className="truncate font-medium text-slate-800">{row.original.name}</p>
+                        <p className="truncate font-medium text-zinc-800">{row.original.name}</p>
                         <p className="text-muted-foreground truncate text-xs">
                             {[row.original.detail, row.original.category, row.original.manufacturer]
                                 .filter(Boolean)
@@ -82,7 +83,7 @@ export default function InventoryIndex({
                 <span
                     className={cn(
                         'inline-flex items-center gap-1 font-semibold tabular-nums',
-                        isLowStock(row.original) ? 'text-amber-700' : 'text-slate-900',
+                        isLowStock(row.original) ? 'text-amber-700' : 'text-zinc-900',
                     )}
                 >
                     {isLowStock(row.original) && <AlertTriangle className="size-3.5" aria-label="Stok menipis" />}
@@ -121,7 +122,7 @@ export default function InventoryIndex({
 
             <PageHeader
                 title="Komponen & Aksesori"
-                description="Stok komponen yang dipasang ke aset dan aksesori yang dipinjamkan ke karyawan."
+                description="Stok komponen yang dipasang ke inventaris dan aksesori yang dipinjamkan ke karyawan."
                 breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Komponen & Aksesori' }]}
                 actions={
                     canCreate && (
@@ -134,42 +135,20 @@ export default function InventoryIndex({
                 }
             />
 
-            <div className="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Jenis stok">
-                {tabs.map((option) => {
-                    const active = option.value === tab;
+            <FilterTabs
+                label="Jenis stok"
+                tabs={tabs.map((option) => ({
+                    value: option.value,
+                    label: option.label,
+                    count: lowStockCounts[option.value] > 0 ? lowStockCounts[option.value] : undefined,
+                    countTone: 'warning',
+                    title: lowStockCounts[option.value] > 0 ? 'Item dengan stok menipis' : undefined,
+                }))}
+                value={tab}
+                onChange={(value) => visit({ tab: value, search: '', low_stock: false })}
+            />
 
-                    return (
-                        <button
-                            key={option.value}
-                            type="button"
-                            role="tab"
-                            aria-selected={active}
-                            onClick={() => visit({ tab: option.value, search: '', low_stock: false })}
-                            className={cn(
-                                'flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-                                active
-                                    ? 'border-primary bg-primary text-white'
-                                    : 'border-border bg-white text-slate-600 hover:bg-slate-50',
-                            )}
-                        >
-                            {option.label}
-                            {lowStockCounts[option.value] > 0 && (
-                                <span
-                                    className={cn(
-                                        'rounded-full px-1.5 text-xs tabular-nums',
-                                        active ? 'bg-white/20' : 'bg-amber-100 text-amber-700',
-                                    )}
-                                    title="Item dengan stok menipis"
-                                >
-                                    {lowStockCounts[option.value]}
-                                </span>
-                            )}
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className="border-border overflow-hidden rounded-xl border bg-white shadow-sm">
+            <div className="border-border bg-card overflow-hidden rounded-xl border">
                 <div className="border-border flex flex-wrap items-center gap-4 border-b p-4">
                     <SearchInput
                         key={tab}
@@ -178,7 +157,7 @@ export default function InventoryIndex({
                         onSearch={(search) => visit({ search })}
                         className="sm:w-96"
                     />
-                    <label className="flex items-center gap-2 text-sm text-slate-600">
+                    <label className="flex items-center gap-2 text-sm text-zinc-600">
                         <Checkbox
                             checked={filters.low_stock}
                             onCheckedChange={(checked) => visit({ low_stock: checked === true })}

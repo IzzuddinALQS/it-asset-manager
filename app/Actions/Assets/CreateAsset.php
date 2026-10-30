@@ -32,7 +32,7 @@ class CreateAsset
                 null,
                 AssetStatus::Pending,
                 $actor,
-                ['note' => 'Aset dicatat dari pengadaan '.($asset->purchase_order ?? 'tanpa nomor PO')],
+                ['note' => 'Inventaris dicatat dari pengadaan '.($asset->purchase_order ?? 'tanpa nomor PO')],
             );
 
             return $asset;

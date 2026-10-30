@@ -36,10 +36,10 @@ enum AssetStatus: string
     {
         return match ($this) {
             self::Pending => 'Menunggu',
-            self::Ready => 'Siap Pakai',
-            self::Deployed => 'Dipakaikan',
+            self::Ready => 'Siap Guna',
+            self::Deployed => 'Digunakan',
             self::Maintenance => 'Perbaikan',
-            self::Retired => 'Dipensiunkan',
+            self::Retired => 'Pensiun',
         };
     }
 

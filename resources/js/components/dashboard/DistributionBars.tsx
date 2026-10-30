@@ -20,23 +20,26 @@ export default function DistributionBars({
     const sum = items.reduce((total, item) => total + item.total, 0);
 
     if (sum === 0) {
-        return <p className="text-muted-foreground py-6 text-center text-xs">{emptyMessage}</p>;
+        return <p className="text-muted-foreground py-6 text-center text-sm">{emptyMessage}</p>;
     }
 
     return (
-        <ul className="space-y-3">
+        <ul className="space-y-3.5">
             {items.map((item) => (
                 <li key={item.key}>
-                    <div className="mb-1 flex items-baseline justify-between gap-2 text-xs">
-                        <span className="truncate font-medium text-slate-700">{item.label}</span>
+                    <div className="mb-1.5 flex items-baseline justify-between gap-2 text-[13px]">
+                        <span className="truncate font-medium text-zinc-700">{item.label}</span>
                         <span className="text-muted-foreground tabular-nums">
-                            <span className="font-semibold text-slate-900">{item.total}</span> ·{' '}
+                            <span className="font-semibold text-zinc-900">{item.total}</span> ·{' '}
                             {Math.round((item.total / sum) * 100)}%
                         </span>
                     </div>
-                    <div className="h-2 rounded-full bg-slate-100">
+                    <div className="h-1.5 rounded-full bg-zinc-100">
                         <div
-                            className={cn('h-2 rounded-full', colors?.[item.key] ?? 'bg-primary')}
+                            className={cn(
+                                'h-1.5 rounded-full transition-[width] duration-500',
+                                colors?.[item.key] ?? 'bg-indigo-500',
+                            )}
                             style={{ width: `${(item.total / max) * 100}%` }}
                         />
                     </div>

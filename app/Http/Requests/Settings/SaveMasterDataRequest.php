@@ -70,7 +70,7 @@ class SaveMasterDataRequest extends FormRequest
     {
         return [
             'name.unique' => 'Nama ini sudah dipakai.',
-            'category_id.exists' => 'Pilih kategori aset yang valid.',
+            'category_id.exists' => 'Pilih kategori inventaris yang valid.',
         ];
     }
 }

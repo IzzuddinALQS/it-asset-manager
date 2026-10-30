@@ -54,7 +54,7 @@ class SyncLicenseAlerts
 
         $this->open($license, AlertType::LicenseSeatsFull, [
             'severity' => AlertSeverity::Info,
-            'message' => "Seat {$license->name} penuh ({$used} dari {$license->seats_total} terpakai).",
+            'message' => "Kuota {$license->name} penuh ({$used} dari {$license->seats_total} terpakai).",
             'due_date' => null,
         ]);
     }

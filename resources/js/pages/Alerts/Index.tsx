@@ -97,7 +97,7 @@ export default function AlertsIndex({ filters, alerts, summary, types, severitie
                     description="Coba ubah filter tipe atau tingkat."
                 />
             ) : (
-                <div className="border-border bg-card rounded-xl border shadow-sm">
+                <div className="border-border bg-card rounded-lg border">
                     <ul className="divide-border divide-y">
                         {alerts.data.map((alert) => (
                             <AlertRow

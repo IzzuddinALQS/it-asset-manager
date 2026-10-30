@@ -15,8 +15,8 @@ function RetireButton() {
                 type="button"
                 onClick={async () => {
                     const confirmed = await confirm({
-                        title: 'Pensiunkan aset?',
-                        description: 'Aset tidak bisa dipakaikan lagi.',
+                        title: 'Pensiunkan inventaris?',
+                        description: 'Inventaris tidak bisa digunakan lagi.',
                         confirmLabel: 'Pensiunkan',
                         destructive: true,
                     });
@@ -40,7 +40,7 @@ describe('ConfirmProvider', () => {
         );
 
         await user.click(screen.getByRole('button', { name: 'Pensiunkan' }));
-        const dialog = await screen.findByRole('dialog', { name: 'Pensiunkan aset?' });
+        const dialog = await screen.findByRole('dialog', { name: 'Pensiunkan inventaris?' });
 
         await user.click(within(dialog).getByRole('button', { name: 'Pensiunkan' }));
 

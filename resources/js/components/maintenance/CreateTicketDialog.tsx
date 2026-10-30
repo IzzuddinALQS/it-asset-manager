@@ -1,8 +1,10 @@
-import { router, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import CurrencyInput from '@/components/CurrencyInput';
 import FormField from '@/components/FormField';
 import OptionSelect from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -14,8 +16,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import type { EmployeeOption, EnumOption } from '@/types/assets';
-import type { MaintenanceAssetOption, SupplierOption } from '@/types/maintenance';
+import type { EnumOption } from '@/types/assets';
 
 interface TicketForm {
     asset_id: number | null;
@@ -39,15 +40,12 @@ function today(): string {
 
 /**
  * Opens a maintenance ticket. With `asset` set the asset is fixed (asset page);
- * otherwise the user picks one from `assets` (board).
+ * otherwise the user searches for one (board).
  */
 export default function CreateTicketDialog({
     open,
     onOpenChange,
     asset,
-    assets,
-    employees,
-    suppliers,
     types,
     priorities,
     handledBy,
@@ -56,10 +54,6 @@ export default function CreateTicketDialog({
     open: boolean;
     onOpenChange: (open: boolean) => void;
     asset?: { id: number; asset_tag: string };
-    /** Lazily loaded lists; `undefined` means not loaded yet. */
-    assets?: MaintenanceAssetOption[];
-    employees?: EmployeeOption[];
-    suppliers?: SupplierOption[];
     types: EnumOption[];
     priorities: EnumOption[];
     handledBy: EnumOption[];
@@ -80,18 +74,6 @@ export default function CreateTicketDialog({
     });
 
     const changeOpen = (next: boolean): void => {
-        if (next) {
-            const missing = [
-                asset === undefined && assets === undefined ? 'assets' : null,
-                employees === undefined ? 'employees' : null,
-                suppliers === undefined ? 'suppliers' : null,
-            ].filter((key): key is string => key !== null);
-
-            if (missing.length > 0) {
-                router.reload({ only: missing });
-            }
-        }
-
         if (!next) {
             reset();
             clearErrors();
@@ -116,24 +98,22 @@ export default function CreateTicketDialog({
                             {asset ? `Kirim ${asset.asset_tag} ke maintenance` : 'Buat tiket maintenance'}
                         </DialogTitle>
                         <DialogDescription>
-                            Status aset berubah menjadi Perbaikan. Status sebelumnya disimpan agar bisa dikembalikan
-                            saat tiket selesai.
-                            {underWarranty && ' Aset ini masih dalam masa garansi.'}
+                            Status inventaris berubah menjadi Perbaikan. Status sebelumnya disimpan agar bisa
+                            dikembalikan saat tiket selesai.
+                            {underWarranty && ' Inventaris ini masih dalam masa garansi.'}
                         </DialogDescription>
                     </DialogHeader>
 
                     {asset === undefined && (
-                        <FormField label="Aset" htmlFor="asset_id" error={errors.asset_id} required>
-                            <OptionSelect
+                        <FormField label="Inventaris" htmlFor="asset_id" error={errors.asset_id} required>
+                            <SearchSelect
                                 id="asset_id"
+                                url="/api/assets/search"
+                                params={{ for: 'maintenance' }}
                                 value={data.asset_id === null ? null : String(data.asset_id)}
                                 onChange={(value) => setData('asset_id', value === null ? null : Number(value))}
-                                options={(assets ?? []).map((option) => ({
-                                    value: String(option.id),
-                                    label: option.asset_tag,
-                                    hint: [option.model, option.status_label].filter(Boolean).join(' · '),
-                                }))}
-                                placeholder={assets === undefined ? 'Memuat aset…' : 'Pilih aset'}
+                                placeholder="Cari inventaris"
+                                searchPlaceholder="Ketik tag, serial, atau model…"
                                 invalid={errors.asset_id !== undefined}
                             />
                         </FormField>
@@ -185,16 +165,12 @@ export default function CreateTicketDialog({
                             error={errors.supplier_id}
                             required={data.handled_by === 'vendor'}
                         >
-                            <OptionSelect
+                            <SearchSelect
                                 id="supplier_id"
+                                url={optionsUrl('suppliers')}
                                 value={data.supplier_id === null ? null : String(data.supplier_id)}
                                 onChange={(value) => setData('supplier_id', value === null ? null : Number(value))}
-                                options={(suppliers ?? []).map((supplier) => ({
-                                    value: String(supplier.id),
-                                    label: supplier.name,
-                                    hint: supplier.is_service_vendor ? 'vendor servis' : null,
-                                }))}
-                                placeholder={suppliers === undefined ? 'Memuat…' : 'Pilih vendor'}
+                                placeholder="Cari vendor"
                                 emptyLabel="Tanpa vendor"
                                 invalid={errors.supplier_id !== undefined}
                             />
@@ -204,21 +180,16 @@ export default function CreateTicketDialog({
                             htmlFor="reported_by_employee_id"
                             error={errors.reported_by_employee_id}
                         >
-                            <OptionSelect
+                            <SearchSelect
                                 id="reported_by_employee_id"
+                                url="/api/employees/search"
                                 value={
                                     data.reported_by_employee_id === null ? null : String(data.reported_by_employee_id)
                                 }
                                 onChange={(value) =>
                                     setData('reported_by_employee_id', value === null ? null : Number(value))
                                 }
-                                options={(employees ?? []).map((employee) => ({
-                                    value: String(employee.id),
-                                    label: employee.name,
-                                    hint: employee.department,
-                                }))}
-                                placeholder={employees === undefined ? 'Memuat…' : 'Pilih karyawan'}
-                                emptyLabel="Tidak ada"
+                                placeholder="Cari karyawan (opsional)"
                             />
                         </FormField>
                         <FormField label="Estimasi biaya" htmlFor="estimated_cost" error={errors.estimated_cost}>
@@ -260,7 +231,7 @@ export default function CreateTicketDialog({
                         <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" loading={processing}>
                             Buat tiket
                         </Button>
                     </DialogFooter>

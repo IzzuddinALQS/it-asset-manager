@@ -319,7 +319,7 @@ class DemoDataSeeder extends Seeder
         $locations = Location::orderBy('id')->get();
         $suppliers = Supplier::where('is_service_vendor', false)->whereNot('name', 'PT Digital Lisensi')->get();
 
-        // Tiga aset pertama yang dipakaikan jatuh ke karyawan yang sedang offboarding.
+        // Tiga aset pertama yang digunakan jatuh ke karyawan yang sedang offboarding.
         $holders = Employee::needsOffboarding()->orderBy('id')->get()
             ->concat(Employee::active()->orderBy('id')->get())
             ->values();
@@ -390,6 +390,9 @@ class DemoDataSeeder extends Seeder
             $asset = new Asset([
                 'asset_tag' => $assetTag,
                 'serial_number' => strtoupper(fake()->unique()->bothify('??########')),
+                // Same shape as the real spreadsheet: every device carries an IMEI and a SIM number.
+                'imei' => fake()->unique()->imei(),
+                'phone_number' => '08'.fake()->unique()->numerify('##########'),
                 'asset_model_id' => $model->id,
                 'status' => $status,
                 'assigned_employee_id' => $employee?->id,
@@ -402,8 +405,15 @@ class DemoDataSeeder extends Seeder
                 'purchase_date' => $purchaseDate->toDateString(),
                 'purchase_cost' => fake()->numberBetween(55, 320) * 100_000,
                 'warranty_until' => $warrantyUntil->toDateString(),
-                'last_audited_at' => $status !== AssetStatus::Pending && fake()->boolean(40) ? now()->subMonths(fake()->numberBetween(1, 8))->toDateString() : null,
-                'notes' => null,
+                // Pending assets have not been through a physical audit yet.
+                'last_audited_at' => $status !== AssetStatus::Pending ? now()->subMonths(fake()->numberBetween(1, 8))->toDateString() : null,
+                'notes' => fake()->randomElement([
+                    'Kelengkapan: unit, charger, dan dus.',
+                    'Kondisi fisik baik, tanpa goresan.',
+                    'Diterima lengkap dengan BAST.',
+                    'Sudah terpasang aplikasi standar kantor.',
+                    'Garansi resmi distributor.',
+                ]),
                 'retire_reason' => $spec['retire_reason'] ?? null,
                 'created_by' => $this->admin->id,
             ]);
@@ -672,7 +682,7 @@ class DemoDataSeeder extends Seeder
             return 'MT-'.now()->year.'-'.str_pad((string) $ticketNumber, 4, '0', STR_PAD_LEFT);
         };
 
-        // Dua tiket selesai pada laptop yang sudah lama dipakaikan; status aset kembali ke deployed.
+        // Dua tiket selesai pada laptop yang sudah lama digunakan; status aset kembali ke deployed.
         $longDeployed = Asset::where('status', AssetStatus::Deployed)
             ->whereHas('assetModel.category', fn (Builder $query) => $query->where('tag_prefix', 'LT'))
             ->where('assigned_at', '<', now()->subDays(60))
@@ -746,7 +756,7 @@ class DemoDataSeeder extends Seeder
                 'from_status' => AssetStatus::Maintenance,
                 'to_status' => AssetStatus::Deployed,
                 'performed_by' => $this->technician->id,
-                'note' => 'Tiket '.$maintenance->ticket_number.' selesai, aset dikembalikan ke pengguna',
+                'note' => 'Tiket '.$maintenance->ticket_number.' selesai, inventaris dikembalikan ke pengguna',
                 'meta' => ['maintenance_id' => $maintenance->id],
             ]);
         }

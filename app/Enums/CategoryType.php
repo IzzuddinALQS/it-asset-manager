@@ -12,7 +12,7 @@ enum CategoryType: string
     public function label(): string
     {
         return match ($this) {
-            self::Asset => 'Aset',
+            self::Asset => 'Inventaris',
             self::Component => 'Komponen',
             self::Accessory => 'Aksesori',
             self::License => 'Lisensi',

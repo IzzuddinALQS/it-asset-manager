@@ -19,6 +19,8 @@ class AssetFactory extends Factory
         return [
             'asset_tag' => 'LT-'.str_pad((string) fake()->unique()->numberBetween(1, 99999), 5, '0', STR_PAD_LEFT),
             'serial_number' => strtoupper(fake()->unique()->bothify('SN-####-????')),
+            'imei' => fake()->unique()->imei(),
+            'phone_number' => '08'.fake()->unique()->numerify('##########'),
             'asset_model_id' => AssetModel::factory(),
             'status' => AssetStatus::Ready,
             'assigned_employee_id' => null,

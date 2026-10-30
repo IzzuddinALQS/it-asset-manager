@@ -47,10 +47,10 @@ class AssignLicenseSeatRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'employee_id.required_if' => 'Pilih karyawan penerima seat.',
+            'employee_id.required_if' => 'Pilih karyawan penerima kuota.',
             'employee_id.exists' => 'Karyawan tidak ditemukan atau sudah tidak aktif.',
-            'asset_id.required_if' => 'Pilih aset penerima seat.',
-            'asset_id.exists' => 'Aset tidak ditemukan atau sudah dipensiunkan.',
+            'asset_id.required_if' => 'Pilih inventaris penerima kuota.',
+            'asset_id.exists' => 'Inventaris tidak ditemukan atau sudah dipensiunkan.',
         ];
     }
 }

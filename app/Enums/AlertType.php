@@ -18,7 +18,7 @@ enum AlertType: string
             self::EmployeeOffboarding => 'Offboarding karyawan',
             self::WarrantyExpiring => 'Garansi segera habis',
             self::LicenseExpiring => 'Lisensi segera habis',
-            self::LicenseSeatsFull => 'Seat lisensi penuh',
+            self::LicenseSeatsFull => 'Kuota lisensi penuh',
             self::OverdueReturn => 'Pengembalian terlambat',
             self::LowStock => 'Stok menipis',
             self::MaintenanceDue => 'Maintenance jatuh tempo',

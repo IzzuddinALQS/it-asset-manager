@@ -17,7 +17,7 @@ class InstallComponentController extends Controller
     public function __invoke(InstallComponentRequest $request, Asset $asset, InstallComponent $installComponent): RedirectResponse
     {
         if ($asset->isRetired()) {
-            return back()->with('error', 'Aset yang sudah dipensiunkan tidak bisa dipasangi komponen.');
+            return back()->with('error', 'Inventaris yang sudah dipensiunkan tidak bisa dipasangi komponen.');
         }
 
         $note = $request->string('note')->trim()->toString();

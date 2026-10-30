@@ -52,12 +52,12 @@ it('rejects an asset status outside the enum', function (): void {
         ->toThrow(QueryException::class, 'assets_status_check');
 });
 
-it('rejects a license seat without an employee or asset', function (): void {
+it('rejects a license kuota without an employee or asset', function (): void {
     expect(attemptWrite(fn () => LicenseSeat::factory()->create(['employee_id' => null, 'asset_id' => null])))
         ->toThrow(QueryException::class, 'license_seats_target');
 });
 
-it('rejects a license without seats', function (): void {
+it('rejects a license without kuota', function (): void {
     expect(attemptWrite(fn () => License::factory()->create(['seats_total' => 0])))
         ->toThrow(QueryException::class, 'licenses_seats_total_check');
 });

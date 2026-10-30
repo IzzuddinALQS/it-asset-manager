@@ -2,6 +2,7 @@ import { Head, router } from '@inertiajs/react';
 import { Download, FileBarChart } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import EmptyState from '@/components/EmptyState';
+import FilterTabs from '@/components/FilterTabs';
 import FormField from '@/components/FormField';
 import PageHeader from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
@@ -78,7 +79,7 @@ export default function ReportsIndex({
 
             <PageHeader
                 title="Laporan"
-                description="Ringkasan aset, lisensi, maintenance, dan stok. Ekspor CSV berisi persis data yang ditampilkan."
+                description="Ringkasan inventaris, lisensi, maintenance, dan stok. Ekspor CSV berisi persis data yang ditampilkan."
                 breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Laporan' }]}
                 actions={
                     <Button asChild>
@@ -89,29 +90,12 @@ export default function ReportsIndex({
                 }
             />
 
-            <div className="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Jenis laporan">
-                {reports.map((option) => {
-                    const active = option.value === current.value;
-
-                    return (
-                        <button
-                            key={option.value}
-                            type="button"
-                            role="tab"
-                            aria-selected={active}
-                            onClick={() => visit({ report: option.value })}
-                            className={cn(
-                                'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-                                active
-                                    ? 'border-primary bg-primary text-white'
-                                    : 'border-border bg-white text-slate-600 hover:bg-slate-50',
-                            )}
-                        >
-                            {option.label}
-                        </button>
-                    );
-                })}
-            </div>
+            <FilterTabs
+                label="Jenis laporan"
+                tabs={reports.map((option) => ({ value: option.value, label: option.label }))}
+                value={current.value}
+                onChange={(report) => visit({ report })}
+            />
 
             {current.date_label === null ? (
                 <p className="text-muted-foreground mb-4 text-sm">
@@ -120,7 +104,7 @@ export default function ReportsIndex({
             ) : (
                 <form
                     onSubmit={applyPeriod}
-                    className="border-border mb-4 flex flex-wrap items-end gap-3 rounded-xl border bg-white p-4 shadow-sm"
+                    className="border-border bg-card mb-4 flex flex-wrap items-end gap-3 rounded-xl border p-4"
                 >
                     <FormField label={`${current.date_label} dari`} htmlFor="from">
                         <Input
@@ -159,15 +143,15 @@ export default function ReportsIndex({
                     description="Ubah rentang tanggal atau pilih laporan lain."
                 />
             ) : (
-                <div className="border-border overflow-x-auto rounded-xl border bg-white shadow-sm">
+                <div className="border-border bg-card overflow-x-auto rounded-xl border">
                     <table className="w-full min-w-[720px] border-collapse text-sm">
                         <thead>
-                            <tr className="border-border border-b bg-slate-50/80">
+                            <tr className="border-border border-b bg-zinc-50/70">
                                 {report.columns.map((column) => (
                                     <th
                                         key={column.key}
                                         className={cn(
-                                            'px-4 py-2.5 text-[10px] font-semibold tracking-wider whitespace-nowrap text-slate-500 uppercase',
+                                            'h-10 px-4 text-xs font-medium whitespace-nowrap text-zinc-500',
                                             numeric(column) ? 'text-right' : 'text-left',
                                         )}
                                     >
@@ -180,13 +164,13 @@ export default function ReportsIndex({
                             {report.rows.map((row, index) => (
                                 <tr
                                     key={index}
-                                    className="border-border/70 border-b last:border-0 hover:bg-slate-50/60"
+                                    className="border-border/70 border-b transition-colors last:border-0 hover:bg-zinc-50"
                                 >
                                     {report.columns.map((column) => (
                                         <td
                                             key={column.key}
                                             className={cn(
-                                                'px-4 py-2.5 text-slate-700',
+                                                'px-4 py-2.5 text-zinc-700',
                                                 numeric(column) && 'text-right tabular-nums',
                                             )}
                                         >
@@ -198,7 +182,7 @@ export default function ReportsIndex({
                         </tbody>
                         {totals && (
                             <tfoot>
-                                <tr className="border-border border-t-2 bg-slate-50 font-semibold text-slate-900">
+                                <tr className="border-border border-t-2 bg-zinc-50 font-semibold text-zinc-900">
                                     {report.columns.map((column) => (
                                         <td
                                             key={column.key}

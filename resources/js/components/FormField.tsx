@@ -24,7 +24,7 @@ export default function FormField({
 }) {
     return (
         <div className={cn('space-y-1.5', className)}>
-            <Label htmlFor={htmlFor} className="text-sm font-medium text-slate-700">
+            <Label htmlFor={htmlFor} className="text-sm font-medium text-zinc-700">
                 {label}
                 {required && <span className="text-destructive ml-0.5">*</span>}
             </Label>

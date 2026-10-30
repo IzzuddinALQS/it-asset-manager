@@ -29,8 +29,8 @@ import {
 import AppLayout from '@/layouts/AppLayout';
 import { useConfirm } from '@/lib/confirm';
 import { cn, formatCurrency } from '@/lib/utils';
-import type { EmployeeOption, EnumOption } from '@/types/assets';
-import type { MaintenanceAssetOption, MaintenanceCard, MaintenanceStatus, SupplierOption } from '@/types/maintenance';
+import type { EnumOption } from '@/types/assets';
+import type { MaintenanceCard, MaintenanceStatus } from '@/types/maintenance';
 
 interface Filters {
     search: string;
@@ -48,17 +48,14 @@ interface BoardProps {
     priorities: EnumOption[];
     handledBy: EnumOption[];
     can: { create: boolean; update: boolean };
-    assets?: MaintenanceAssetOption[];
-    employees?: EmployeeOption[];
-    suppliers?: SupplierOption[];
 }
 
 const columns: { status: MaintenanceStatus; label: string; accent: string }[] = [
-    { status: 'reported', label: 'Dilaporkan', accent: 'bg-amber-400' },
-    { status: 'in_progress', label: 'Dikerjakan', accent: 'bg-blue-500' },
+    { status: 'reported', label: 'Dilaporkan', accent: 'bg-amber-500' },
+    { status: 'in_progress', label: 'Dikerjakan', accent: 'bg-indigo-500' },
     { status: 'waiting_parts', label: 'Menunggu Sparepart', accent: 'bg-orange-500' },
     { status: 'done', label: 'Selesai', accent: 'bg-emerald-500' },
-    { status: 'cancelled', label: 'Dibatalkan', accent: 'bg-slate-400' },
+    { status: 'cancelled', label: 'Dibatalkan', accent: 'bg-zinc-400' },
 ];
 
 export default function MaintenanceIndex(props: BoardProps) {
@@ -79,9 +76,6 @@ function MaintenanceBoard({
     priorities,
     handledBy,
     can,
-    assets,
-    employees,
-    suppliers,
 }: BoardProps) {
     const confirm = useConfirm();
     const [createOpen, setCreateOpen] = useState(false);
@@ -102,7 +96,7 @@ function MaintenanceBoard({
     const cancel = async (ticket: MaintenanceCard): Promise<void> => {
         const confirmed = await confirm({
             title: `Batalkan ${ticket.ticket_number}?`,
-            description: 'Aset dikembalikan ke status sebelum masuk maintenance.',
+            description: 'Inventaris dikembalikan ke status sebelum masuk maintenance.',
             confirmLabel: 'Batalkan tiket',
             destructive: true,
         });
@@ -157,7 +151,7 @@ function MaintenanceBoard({
                 <SearchInput
                     defaultValue={filters.search}
                     onSearch={(search) => visit({ search })}
-                    placeholder="Cari nomor tiket, judul, atau tag aset…"
+                    placeholder="Cari nomor tiket, judul, atau tag inventaris…"
                     className="w-full sm:w-80"
                 />
                 <OptionSelect
@@ -174,7 +168,7 @@ function MaintenanceBoard({
                     emptyLabel="Semua prioritas"
                     className="w-full bg-white sm:w-44"
                 />
-                <label className="flex items-center gap-2 text-sm text-slate-600">
+                <label className="flex items-center gap-2 text-sm text-zinc-600">
                     <Checkbox
                         checked={filters.show_cancelled}
                         onCheckedChange={(checked) => visit({ show_cancelled: checked === true })}
@@ -196,18 +190,18 @@ function MaintenanceBoard({
                         return (
                             <section
                                 key={column.status}
-                                className="flex min-h-64 flex-col rounded-xl bg-slate-100/70 p-3"
+                                className="flex min-h-64 flex-col rounded-xl bg-zinc-100/70 p-2.5"
                                 aria-label={column.label}
                             >
                                 <header className="mb-3 flex items-center gap-2 px-1">
                                     <span className={cn('size-2 rounded-full', column.accent)} />
-                                    <h2 className="text-sm font-semibold text-slate-800">{column.label}</h2>
-                                    <span className="text-muted-foreground ml-auto text-xs tabular-nums">
+                                    <h2 className="text-sm font-semibold text-zinc-900">{column.label}</h2>
+                                    <span className="ml-auto rounded-full bg-white px-1.5 text-xs font-medium text-zinc-600 tabular-nums ring-1 ring-zinc-200">
                                         {columnTickets.length}
                                     </span>
                                 </header>
                                 {(column.status === 'done' || column.status === 'cancelled') && (
-                                    <p className="text-muted-foreground mb-2 px-1 text-[11px]">
+                                    <p className="text-muted-foreground mb-2 px-1 text-xs">
                                         {closedVisibleDays} hari terakhir
                                     </p>
                                 )}
@@ -236,9 +230,6 @@ function MaintenanceBoard({
                 <CreateTicketDialog
                     open={createOpen}
                     onOpenChange={setCreateOpen}
-                    assets={assets}
-                    employees={employees}
-                    suppliers={suppliers}
                     types={types}
                     priorities={priorities}
                     handledBy={handledBy}
@@ -268,11 +259,11 @@ function TicketCard({
     ).filter(([status]) => status !== ticket.status);
 
     return (
-        <article className="border-border rounded-lg border bg-white p-3 shadow-sm">
+        <article className="border-border bg-card rounded-lg border p-3 shadow-xs transition-colors hover:border-zinc-300">
             <div className="flex items-start justify-between gap-2">
                 <Link
                     href={`/maintenance/${ticket.id}`}
-                    className="font-tag text-xs font-semibold text-slate-500 hover:underline"
+                    className="font-tag text-xs font-semibold text-zinc-500 hover:underline"
                 >
                     {ticket.ticket_number}
                 </Link>
@@ -307,7 +298,7 @@ function TicketCard({
             </div>
             <Link
                 href={`/maintenance/${ticket.id}`}
-                className="mt-1 block text-sm font-medium text-slate-800 hover:underline"
+                className="mt-1 block text-sm font-medium text-zinc-800 hover:underline"
             >
                 {ticket.title}
             </Link>
@@ -318,7 +309,7 @@ function TicketCard({
                 {ticket.asset.model && ` · ${ticket.asset.model}`}
             </p>
             {ticket.asset.holder && <p className="text-muted-foreground text-xs">Pengguna: {ticket.asset.holder}</p>}
-            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-zinc-500">
                 <span>{ticket.type_label}</span>
                 <span>·</span>
                 <span>{ticket.supplier ?? ticket.handled_by_label}</span>

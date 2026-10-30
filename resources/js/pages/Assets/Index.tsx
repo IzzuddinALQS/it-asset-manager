@@ -5,7 +5,9 @@ import { useState } from 'react';
 import DataTable from '@/components/DataTable';
 import DateDisplay from '@/components/DateDisplay';
 import EmptyState from '@/components/EmptyState';
-import OptionSelect from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
+import FilterTabs from '@/components/FilterTabs';
 import PageHeader from '@/components/PageHeader';
 import Pagination, { type Paginator } from '@/components/Pagination';
 import SearchInput from '@/components/SearchInput';
@@ -13,9 +15,9 @@ import StatusBadge from '@/components/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import AppLayout from '@/layouts/AppLayout';
-import { cn } from '@/lib/utils';
+
 import type { PageProps } from '@/types';
-import type { AssetListItem, AssetStatus, EnumOption, Option } from '@/types/assets';
+import type { AssetListItem, AssetStatus, EnumOption } from '@/types/assets';
 
 interface Filters {
     search: string;
@@ -31,15 +33,11 @@ export default function AssetsIndex({
     filters,
     statusOptions,
     statusCounts,
-    categories,
-    locations,
 }: {
     assets: Paginator<AssetListItem>;
     filters: Filters;
     statusOptions: EnumOption[];
     statusCounts: Record<AssetStatus, number>;
-    categories: Option[];
-    locations: Option[];
 }) {
     const { permissions } = usePage<PageProps>().props;
     const [selected, setSelected] = useState<number[]>([]);
@@ -64,7 +62,7 @@ export default function AssetsIndex({
             enableSorting: false,
             header: () => (
                 <Checkbox
-                    aria-label="Pilih semua aset di halaman ini"
+                    aria-label="Pilih semua inventaris di halaman ini"
                     checked={allOnPageSelected}
                     onCheckedChange={(checked) =>
                         setSelected((current) =>
@@ -101,7 +99,7 @@ export default function AssetsIndex({
             enableSorting: false,
             cell: ({ row }) => (
                 <div className="min-w-0">
-                    <p className="truncate font-medium text-slate-800">{row.original.model ?? '—'}</p>
+                    <p className="truncate font-medium text-zinc-800">{row.original.model ?? '—'}</p>
                     <p className="text-muted-foreground truncate text-xs">
                         {[row.original.category, row.original.serial_number].filter(Boolean).join(' · ')}
                     </p>
@@ -121,9 +119,9 @@ export default function AssetsIndex({
                 row.original.holder ? (
                     <span className="flex items-center gap-1.5 whitespace-nowrap">
                         {row.original.holder_type === 'location' ? (
-                            <MapPin className="size-3.5 text-slate-400" />
+                            <MapPin className="size-3.5 text-zinc-400" />
                         ) : (
-                            <User className="size-3.5 text-slate-400" />
+                            <User className="size-3.5 text-zinc-400" />
                         )}
                         {row.original.holder}
                     </span>
@@ -160,12 +158,12 @@ export default function AssetsIndex({
 
     return (
         <AppLayout>
-            <Head title="Aset" />
+            <Head title="Inventaris" />
 
             <PageHeader
-                title="Aset"
+                title="Inventaris"
                 description="Semua perangkat IT beserta status, pemegang, dan masa garansinya."
-                breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Aset' }]}
+                breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Inventaris' }]}
                 actions={
                     <>
                         {selected.length > 0 && (
@@ -182,7 +180,7 @@ export default function AssetsIndex({
                         {permissions.manage && (
                             <Button asChild>
                                 <Link href="/assets/create">
-                                    <Plus /> Tambah aset
+                                    <Plus /> Tambah inventaris
                                 </Link>
                             </Button>
                         )}
@@ -190,59 +188,37 @@ export default function AssetsIndex({
                 }
             />
 
-            <div className="mb-4 flex flex-wrap gap-2" role="tablist" aria-label="Filter status">
-                {statusTabs.map((tab) => {
-                    const active = filters.status === tab.value;
+            <FilterTabs
+                label="Filter status"
+                tabs={statusTabs}
+                value={filters.status}
+                onChange={(status) => applyFilters({ status })}
+            />
 
-                    return (
-                        <button
-                            key={tab.value || 'all'}
-                            type="button"
-                            role="tab"
-                            aria-selected={active}
-                            onClick={() => applyFilters({ status: tab.value })}
-                            className={cn(
-                                'flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-                                active
-                                    ? 'border-primary bg-primary text-white'
-                                    : 'border-border bg-white text-slate-600 hover:bg-slate-50',
-                            )}
-                        >
-                            {tab.label}
-                            <span
-                                className={cn(
-                                    'rounded-full px-1.5 text-xs tabular-nums',
-                                    active ? 'bg-white/20' : 'bg-slate-100 text-slate-500',
-                                )}
-                            >
-                                {tab.count}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            <div className="border-border overflow-hidden rounded-xl border bg-white shadow-sm">
-                <div className="border-border flex flex-wrap items-center gap-3 border-b p-4">
+            <div className="border-border bg-card overflow-hidden rounded-xl border">
+                <div className="border-border flex flex-wrap items-center gap-2 border-b p-3">
                     <SearchInput
                         defaultValue={filters.search}
-                        placeholder="Cari tag, serial, model, atau pemegang"
+                        placeholder="Cari tag, serial, IMEI, nomor HP, model, atau pemegang"
                         onSearch={(search) => applyFilters({ search })}
                         className="sm:w-96"
                     />
-                    <OptionSelect
+                    <SearchSelect
+                        url={optionsUrl('categories')}
+                        params={{ category_type: 'asset' }}
                         value={filters.category_id === null ? null : String(filters.category_id)}
                         onChange={(value) => applyFilters({ category_id: value === null ? null : Number(value) })}
-                        options={categories.map((category) => ({ value: String(category.id), label: category.name }))}
+                        placeholder="Semua kategori"
                         emptyLabel="Semua kategori"
-                        className="w-full bg-white sm:w-52"
+                        className="sm:w-52"
                     />
-                    <OptionSelect
+                    <SearchSelect
+                        url={optionsUrl('locations')}
                         value={filters.location_id === null ? null : String(filters.location_id)}
                         onChange={(value) => applyFilters({ location_id: value === null ? null : Number(value) })}
-                        options={locations.map((location) => ({ value: String(location.id), label: location.name }))}
+                        placeholder="Semua lokasi"
                         emptyLabel="Semua lokasi"
-                        className="w-full bg-white sm:w-52"
+                        className="sm:w-52"
                     />
                 </div>
 
@@ -250,8 +226,8 @@ export default function AssetsIndex({
                     <div className="p-6">
                         <EmptyState
                             icon={HardDrive}
-                            title="Tidak ada aset yang cocok"
-                            description="Ubah kata kunci atau filter untuk melihat aset lain."
+                            title="Tidak ada inventaris yang cocok"
+                            description="Ubah kata kunci atau filter untuk melihat inventaris lain."
                         />
                     </div>
                 ) : (

@@ -105,7 +105,7 @@ class GenerateReport
         return [
             'columns' => [
                 ['key' => 'group', 'label' => $label, 'type' => 'text'],
-                ['key' => 'asset_count', 'label' => 'Jumlah aset', 'type' => 'number'],
+                ['key' => 'asset_count', 'label' => 'Jumlah inventaris', 'type' => 'number'],
                 ['key' => 'total_cost', 'label' => 'Nilai pembelian', 'type' => 'currency'],
             ],
             'rows' => $rows,
@@ -156,7 +156,7 @@ class GenerateReport
 
         return [
             'columns' => [
-                ['key' => 'asset_tag', 'label' => 'Tag aset', 'type' => 'text'],
+                ['key' => 'asset_tag', 'label' => 'Tag inventaris', 'type' => 'text'],
                 ['key' => 'model', 'label' => 'Model', 'type' => 'text'],
                 ['key' => 'category', 'label' => 'Kategori', 'type' => 'text'],
                 ['key' => 'status', 'label' => 'Status', 'type' => 'text'],
@@ -215,8 +215,8 @@ class GenerateReport
                 ['key' => 'name', 'label' => 'Lisensi', 'type' => 'text'],
                 ['key' => 'manufacturer', 'label' => 'Manufaktur', 'type' => 'text'],
                 ['key' => 'license_type', 'label' => 'Jenis', 'type' => 'text'],
-                ['key' => 'seats_total', 'label' => 'Total seat', 'type' => 'number'],
-                ['key' => 'seats_used', 'label' => 'Seat terpakai', 'type' => 'number'],
+                ['key' => 'seats_total', 'label' => 'Total kuota', 'type' => 'number'],
+                ['key' => 'seats_used', 'label' => 'Kuota terpakai', 'type' => 'number'],
                 ['key' => 'utilization', 'label' => 'Utilisasi (%)', 'type' => 'percent'],
                 ['key' => 'annual_cost', 'label' => 'Biaya/tahun', 'type' => 'currency'],
                 ['key' => 'expires_at', 'label' => 'Kedaluwarsa', 'type' => 'date'],
@@ -263,7 +263,7 @@ class GenerateReport
         return [
             'columns' => [
                 ['key' => 'ticket_number', 'label' => 'Tiket', 'type' => 'text'],
-                ['key' => 'asset_tag', 'label' => 'Tag aset', 'type' => 'text'],
+                ['key' => 'asset_tag', 'label' => 'Tag inventaris', 'type' => 'text'],
                 ['key' => 'title', 'label' => 'Judul', 'type' => 'text'],
                 ['key' => 'type', 'label' => 'Jenis', 'type' => 'text'],
                 ['key' => 'handled_by', 'label' => 'Ditangani', 'type' => 'text'],

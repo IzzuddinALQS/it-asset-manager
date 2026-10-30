@@ -86,7 +86,7 @@ it('returns a deployed asset straight into maintenance', function (): void {
         ->and($asset->logs()->first()->note)->toBe('Layar retak');
 });
 
-it('releases license seats when an asset is retired', function (): void {
+it('releases license kuota when an asset is retired', function (): void {
     $asset = Asset::factory()->create();
     LicenseSeat::factory()->create(['employee_id' => null, 'asset_id' => $asset->id]);
 

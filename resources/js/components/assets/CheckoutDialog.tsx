@@ -1,8 +1,9 @@
-import { router, useForm } from '@inertiajs/react';
+import { useForm } from '@inertiajs/react';
 import { MapPin, User } from 'lucide-react';
 import type { FormEvent } from 'react';
 import FormField from '@/components/FormField';
-import OptionSelect from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -15,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import type { EmployeeOption, Option } from '@/types/assets';
 
 interface CheckoutForm {
     recipient: 'employee' | 'location';
@@ -30,16 +30,11 @@ export default function CheckoutDialog({
     assetTag,
     open,
     onOpenChange,
-    employees,
-    locations,
 }: {
     assetId: number;
     assetTag: string;
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    /** Loaded lazily the first time the dialog opens. */
-    employees: EmployeeOption[] | undefined;
-    locations: Option[];
 }) {
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm<CheckoutForm>({
         recipient: 'employee',
@@ -50,10 +45,6 @@ export default function CheckoutDialog({
     });
 
     const changeOpen = (next: boolean): void => {
-        if (next && employees === undefined) {
-            router.reload({ only: ['employees'] });
-        }
-
         if (!next) {
             reset();
             clearErrors();
@@ -79,10 +70,10 @@ export default function CheckoutDialog({
             <DialogContent className="sm:max-w-lg">
                 <form onSubmit={submit} className="space-y-5">
                     <DialogHeader>
-                        <DialogTitle>Checkout {assetTag}</DialogTitle>
+                        <DialogTitle>Berikan {assetTag}</DialogTitle>
                         <DialogDescription>
-                            Serahkan aset ke karyawan atau tempatkan di sebuah lokasi. Riwayat akan mencatat penyerahan
-                            ini.
+                            Serahkan inventaris ke karyawan atau tempatkan di sebuah lokasi. Riwayat akan mencatat
+                            penyerahan ini.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -103,7 +94,7 @@ export default function CheckoutDialog({
                                     'flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium',
                                     data.recipient === value
                                         ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-border text-slate-600 hover:bg-slate-50',
+                                        : 'border-border text-zinc-600 hover:bg-zinc-50',
                                 )}
                             >
                                 <Icon className="size-4" /> {label}
@@ -118,18 +109,14 @@ export default function CheckoutDialog({
                             error={errors.assigned_employee_id}
                             required
                         >
-                            <OptionSelect
+                            <SearchSelect
                                 id="assigned_employee_id"
+                                url="/api/employees/search"
                                 value={data.assigned_employee_id === null ? null : String(data.assigned_employee_id)}
                                 onChange={(value) =>
                                     setData('assigned_employee_id', value === null ? null : Number(value))
                                 }
-                                options={(employees ?? []).map((employee) => ({
-                                    value: String(employee.id),
-                                    label: employee.name,
-                                    hint: [employee.employee_number, employee.department].filter(Boolean).join(' · '),
-                                }))}
-                                placeholder={employees === undefined ? 'Memuat karyawan…' : 'Pilih karyawan aktif'}
+                                placeholder="Cari karyawan aktif"
                                 invalid={errors.assigned_employee_id !== undefined}
                             />
                         </FormField>
@@ -140,17 +127,14 @@ export default function CheckoutDialog({
                             error={errors.assigned_location_id}
                             required
                         >
-                            <OptionSelect
+                            <SearchSelect
                                 id="assigned_location_id"
+                                url={optionsUrl('locations')}
                                 value={data.assigned_location_id === null ? null : String(data.assigned_location_id)}
                                 onChange={(value) =>
                                     setData('assigned_location_id', value === null ? null : Number(value))
                                 }
-                                options={locations.map((location) => ({
-                                    value: String(location.id),
-                                    label: location.name,
-                                }))}
-                                placeholder="Pilih lokasi"
+                                placeholder="Cari lokasi"
                                 invalid={errors.assigned_location_id !== undefined}
                             />
                         </FormField>
@@ -184,8 +168,8 @@ export default function CheckoutDialog({
                         <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
-                            Checkout
+                        <Button type="submit" loading={processing}>
+                            Berikan
                         </Button>
                     </DialogFooter>
                 </form>

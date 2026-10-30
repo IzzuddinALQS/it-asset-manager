@@ -121,10 +121,6 @@ class MaintenanceController extends Controller
                 'create' => $user?->can('create', Maintenance::class) ?? false,
                 'update' => $user?->can('update', new Maintenance) ?? false,
             ],
-            // The three lists load only when the create dialog opens (partial reload).
-            'assets' => Inertia::optional(fn (): array => $this->eligibleAssetOptions()),
-            'employees' => Inertia::optional(fn (): array => $this->reporterOptions()),
-            'suppliers' => Inertia::optional(fn (): array => $this->supplierOptions()),
         ]);
     }
 
@@ -210,29 +206,6 @@ class MaintenanceController extends Controller
                 'cancel' => $canUpdate && $isOpen,
             ],
             // Loaded only when the completion dialog opens (partial reload).
-            'componentOptions' => Inertia::optional(fn (): array => $this->sparePartOptions()),
         ]);
-    }
-
-    /**
-     * Assets that can receive a ticket: in service, or in maintenance without one.
-     *
-     * @return array<int, array{id: int, asset_tag: string, model: string|null, status_label: string}>
-     */
-    private function eligibleAssetOptions(): array
-    {
-        return Asset::query()
-            ->whereIn('status', [AssetStatus::Ready, AssetStatus::Deployed, AssetStatus::Maintenance])
-            ->whereDoesntHave('maintenances', fn (Builder $query) => $query->open())
-            ->with('assetModel:id,name')
-            ->orderBy('asset_tag')
-            ->get(['id', 'asset_tag', 'asset_model_id', 'status'])
-            ->map(fn (Asset $asset): array => [
-                'id' => $asset->id,
-                'asset_tag' => $asset->asset_tag,
-                'model' => $asset->assetModel?->name,
-                'status_label' => $asset->status->label(),
-            ])
-            ->all();
     }
 }

@@ -5,12 +5,8 @@ namespace App\Http\Controllers\Maintenance;
 use App\Actions\Maintenance\GeneratePlanTickets;
 use App\Actions\Maintenance\SaveMaintenancePlan;
 use App\Actions\Maintenance\SyncMaintenancePlanAlert;
-use App\Enums\CategoryType;
-use App\Http\Controllers\Concerns\ProvidesMaintenanceOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Maintenance\SaveMaintenancePlanRequest;
-use App\Models\Category;
-use App\Models\Location;
 use App\Models\MaintenancePlan;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -19,8 +15,6 @@ use Inertia\Response;
 
 class MaintenancePlanController extends Controller
 {
-    use ProvidesMaintenanceOptions;
-
     public function index(Request $request, GeneratePlanTickets $generatePlanTickets): Response
     {
         $this->authorize('viewAny', MaintenancePlan::class);
@@ -54,18 +48,6 @@ class MaintenancePlanController extends Controller
         return Inertia::render('Maintenance/Plans', [
             'plans' => $plans,
             'warningDays' => SyncMaintenancePlanAlert::DUE_WARNING_DAYS,
-            'categories' => Category::query()
-                ->where('type', CategoryType::Asset)
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (Category $category): array => ['id' => $category->id, 'name' => $category->name])
-                ->all(),
-            'locations' => Location::query()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (Location $location): array => ['id' => $location->id, 'name' => $location->name])
-                ->all(),
-            'suppliers' => $this->supplierOptions(),
             'can' => [
                 'manage' => $user?->can('create', MaintenancePlan::class) ?? false,
             ],

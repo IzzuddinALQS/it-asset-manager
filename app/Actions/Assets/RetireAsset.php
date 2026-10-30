@@ -52,7 +52,7 @@ class RetireAsset
                 AssetStatus::Retired,
                 $actor,
                 [
-                    'note' => $data['note'] ?? "Aset dipensiunkan: {$reason->label()}",
+                    'note' => $data['note'] ?? "Inventaris dipensiunkan: {$reason->label()}",
                     'meta' => ['retire_reason' => $reason->value, 'released_license_seats' => $releasedSeats],
                 ],
             );

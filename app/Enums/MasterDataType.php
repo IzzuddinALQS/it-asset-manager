@@ -24,7 +24,7 @@ enum MasterDataType: string
             self::Manufacturers => 'Manufaktur',
             self::Suppliers => 'Supplier',
             self::Locations => 'Lokasi',
-            self::Models => 'Model aset',
+            self::Models => 'Model inventaris',
         };
     }
 

@@ -46,7 +46,7 @@ class SaveMaintenancePlanRequest extends FormRequest
     {
         return [
             'name.required' => 'Nama jadwal wajib diisi.',
-            'category_id.required' => 'Pilih kategori aset yang dicakup.',
+            'category_id.required' => 'Pilih kategori inventaris yang dicakup.',
             'interval_months.required' => 'Interval wajib diisi.',
             'interval_months.min' => 'Interval minimal 1 bulan.',
             'next_due_date.required' => 'Tanggal jatuh tempo berikutnya wajib diisi.',

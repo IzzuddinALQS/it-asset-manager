@@ -26,6 +26,6 @@ class ReleaseLicenseSeatController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        return back()->with('success', "Seat {$license->name} dilepas.");
+        return back()->with('success', "Kuota {$license->name} dilepas.");
     }
 }

@@ -3,11 +3,11 @@ import { cn, formatDate } from '@/lib/utils';
 import { daysUntil, expiryTone } from '@/types/licenses';
 
 const toneClass = {
-    none: 'bg-slate-100 text-slate-600',
-    ok: 'bg-emerald-50 text-emerald-700',
-    warning: 'bg-amber-100 text-amber-800',
-    critical: 'bg-red-100 text-red-700',
-    expired: 'bg-red-600 text-white',
+    none: 'bg-zinc-50 text-zinc-600 ring-zinc-200',
+    ok: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
+    warning: 'bg-amber-50 text-amber-800 ring-amber-200',
+    critical: 'bg-red-50 text-red-700 ring-red-200',
+    expired: 'bg-red-600 text-white ring-red-600',
 };
 
 export default function ExpiryBadge({ expiresAt, warningDays }: { expiresAt: string | null; warningDays: number }) {
@@ -25,7 +25,7 @@ export default function ExpiryBadge({ expiresAt, warningDays }: { expiresAt: str
     return (
         <span
             className={cn(
-                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap',
+                'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium whitespace-nowrap ring-1 ring-inset',
                 toneClass[tone],
             )}
         >

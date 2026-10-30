@@ -19,7 +19,7 @@ interface CheckinForm {
 }
 
 const outcomes = [
-    { value: 'ready', label: 'Siap Pakai', description: 'Kondisi baik, kembali ke stok.' },
+    { value: 'ready', label: 'Siap Guna', description: 'Kondisi baik, kembali ke stok.' },
     { value: 'maintenance', label: 'Perlu perbaikan', description: 'Ada kerusakan, masuk antrean perbaikan.' },
 ] as const;
 
@@ -63,9 +63,11 @@ export default function CheckinDialog({
             <DialogContent className="sm:max-w-lg">
                 <form onSubmit={submit} className="space-y-5">
                     <DialogHeader>
-                        <DialogTitle>Check-in {assetTag}</DialogTitle>
+                        <DialogTitle>Kembalikan {assetTag}</DialogTitle>
                         <DialogDescription>
-                            {holderName ? `Terima kembali aset dari ${holderName}.` : 'Terima kembali aset ini.'}
+                            {holderName
+                                ? `Terima kembali inventaris dari ${holderName}.`
+                                : 'Terima kembali inventaris ini.'}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -82,10 +84,10 @@ export default function CheckinDialog({
                                         'rounded-lg border p-3 text-left',
                                         data.to_status === outcome.value
                                             ? 'border-primary bg-primary/5'
-                                            : 'border-border hover:bg-slate-50',
+                                            : 'border-border hover:bg-zinc-50',
                                     )}
                                 >
-                                    <span className="block text-sm font-semibold text-slate-800">{outcome.label}</span>
+                                    <span className="block text-sm font-semibold text-zinc-800">{outcome.label}</span>
                                     <span className="text-muted-foreground block text-xs">{outcome.description}</span>
                                 </button>
                             ))}
@@ -106,8 +108,8 @@ export default function CheckinDialog({
                         <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
-                            Check-in
+                        <Button type="submit" loading={processing}>
+                            Kembalikan
                         </Button>
                     </DialogFooter>
                 </form>

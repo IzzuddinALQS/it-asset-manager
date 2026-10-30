@@ -12,12 +12,12 @@ class MaintenanceException extends RuntimeException
 {
     public static function assetUnavailable(string $assetTag, string $statusLabel): self
     {
-        return new self("Aset {$assetTag} berstatus \"{$statusLabel}\" dan tidak bisa dikirim ke maintenance.");
+        return new self("Inventaris {$assetTag} berstatus \"{$statusLabel}\" dan tidak bisa dikirim ke maintenance.");
     }
 
     public static function alreadyOpen(string $assetTag, string $ticketNumber): self
     {
-        return new self("Aset {$assetTag} masih punya tiket terbuka ({$ticketNumber}).");
+        return new self("Inventaris {$assetTag} masih punya tiket terbuka ({$ticketNumber}).");
     }
 
     public static function invalidTransition(MaintenanceStatus $from, MaintenanceStatus $to): self
@@ -27,6 +27,6 @@ class MaintenanceException extends RuntimeException
 
     public static function cannotReturnToHolder(): self
     {
-        return new self('Aset tidak sedang dipakaikan sebelum maintenance, jadi hanya bisa dikembalikan ke status Siap Pakai.');
+        return new self('Inventaris tidak sedang digunakan sebelum maintenance, jadi hanya bisa dikembalikan ke status Siap Guna.');
     }
 }

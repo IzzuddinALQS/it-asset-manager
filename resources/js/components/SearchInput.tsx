@@ -35,7 +35,7 @@ export default function SearchInput({
 
     return (
         <div className={cn('relative w-full sm:w-72', className)}>
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
             <input
                 type="search"
                 value={value}
@@ -61,7 +61,7 @@ export default function SearchInput({
                         setValue('');
                         search('', false);
                     }}
-                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5 text-slate-400 hover:text-slate-700"
+                    className="absolute top-1/2 right-2 -translate-y-1/2 rounded p-0.5 text-zinc-400 hover:text-zinc-700"
                 >
                     <X className="size-3.5" />
                 </button>

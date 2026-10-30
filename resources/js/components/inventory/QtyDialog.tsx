@@ -2,6 +2,7 @@ import { router, useForm } from '@inertiajs/react';
 import type { FormEvent, ReactNode } from 'react';
 import FormField from '@/components/FormField';
 import OptionSelect, { type SelectOption } from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -24,7 +25,8 @@ interface QtyForm {
 /**
  * Dialog for every quantity-based stock movement: install a component, lend an
  * accessory, or return part of a loan. `target` adds a picker (component or
- * employee) whose options are fetched lazily through `lazyProp`.
+ * employee) whose options are either fetched lazily through `lazyProp` or
+ * searched as the user types through `searchUrl`.
  */
 export default function QtyDialog({
     open,
@@ -51,9 +53,10 @@ export default function QtyDialog({
         field: string;
         label: string;
         placeholder: string;
-        options: SelectOption[] | undefined;
-        lazyProp: string;
-        onChange?: (id: number | null) => void;
+        options?: SelectOption[];
+        lazyProp?: string;
+        searchUrl?: string;
+        onChange?: (id: number | null, option: SelectOption | null) => void;
     };
     extra?: (form: { isFactory: boolean; setIsFactory: (value: boolean) => void }) => ReactNode;
 }) {
@@ -66,7 +69,7 @@ export default function QtyDialog({
     const fieldErrors = errors as Partial<Record<string, string>>;
 
     const changeOpen = (next: boolean): void => {
-        if (next && target !== undefined && target.options === undefined) {
+        if (next && target?.lazyProp !== undefined && target.options === undefined) {
             router.reload({ only: [target.lazyProp] });
         }
 
@@ -95,18 +98,36 @@ export default function QtyDialog({
 
                     {target !== undefined && (
                         <FormField label={target.label} htmlFor="target_id" error={fieldErrors[target.field]} required>
-                            <OptionSelect
-                                id="target_id"
-                                value={data.target_id === null ? null : String(data.target_id)}
-                                onChange={(value) => {
-                                    const id = value === null ? null : Number(value);
-                                    setData('target_id', id);
-                                    target.onChange?.(id);
-                                }}
-                                options={target.options ?? []}
-                                placeholder={target.options === undefined ? 'Memuat…' : target.placeholder}
-                                invalid={fieldErrors[target.field] !== undefined}
-                            />
+                            {target.searchUrl !== undefined ? (
+                                <SearchSelect
+                                    id="target_id"
+                                    url={target.searchUrl}
+                                    value={data.target_id === null ? null : String(data.target_id)}
+                                    onChange={(value, option) => {
+                                        const id = value === null ? null : Number(value);
+                                        setData('target_id', id);
+                                        target.onChange?.(id, option);
+                                    }}
+                                    placeholder={target.placeholder}
+                                    invalid={fieldErrors[target.field] !== undefined}
+                                />
+                            ) : (
+                                <OptionSelect
+                                    id="target_id"
+                                    value={data.target_id === null ? null : String(data.target_id)}
+                                    onChange={(value) => {
+                                        const id = value === null ? null : Number(value);
+                                        setData('target_id', id);
+                                        target.onChange?.(
+                                            id,
+                                            target.options?.find((option) => option.value === value) ?? null,
+                                        );
+                                    }}
+                                    options={target.options ?? []}
+                                    placeholder={target.options === undefined ? 'Memuat…' : target.placeholder}
+                                    invalid={fieldErrors[target.field] !== undefined}
+                                />
+                            )}
                         </FormField>
                     )}
 
@@ -143,7 +164,7 @@ export default function QtyDialog({
                         <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" loading={processing}>
                             {submitLabel}
                         </Button>
                     </DialogFooter>

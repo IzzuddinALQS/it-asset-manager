@@ -12,3 +12,5 @@ Artisan::command('inspire', function () {
 // Covers what licenses:sync-alerts and maintenance:sync-alerts did, plus warranty,
 // overdue return, low stock and offboarding; those commands remain for manual runs.
 Schedule::job(new GenerateAlertsJob)->dailyAt('06:00')->withoutOverlapping();
+
+Schedule::command('herd:sync-employees')->dailyAt('02:00')->withoutOverlapping();

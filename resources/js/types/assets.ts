@@ -46,6 +46,9 @@ export interface AssetDetail {
     id: number;
     asset_tag: string;
     serial_number: string | null;
+    imei: string | null;
+    phone_number: string | null;
+    qr_svg: string;
     status: AssetStatus;
     status_label: string;
     status_note: string;
@@ -114,6 +117,8 @@ export interface AssetModelOption extends Option {
 export interface AssetFormData {
     asset_model_id: number | null;
     serial_number: string;
+    imei: string;
+    phone_number: string;
     location_id: number | null;
     supplier_id: number | null;
     purchase_order: string;

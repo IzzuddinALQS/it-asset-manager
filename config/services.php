@@ -35,4 +35,15 @@ return [
         ],
     ],
 
+    'herd' => [
+        'origin' => rtrim((string) env('HERD_ORIGIN'), '/'),
+        'api_base' => rtrim((string) env('HERD_API_BASE'), '/'),
+        'token' => env('HERD_TOKEN'),
+        'consumer_app' => env('CONSUMER_APP', 'iam'),
+        'client_id' => env('OAUTH_CLIENT_ID'),
+        'client_secret' => env('OAUTH_CLIENT_SECRET'),
+        'redirect_uri' => env('OAUTH_REDIRECT_URI'),
+        'scopes' => 'openid profile email employee',
+    ],
+
 ];

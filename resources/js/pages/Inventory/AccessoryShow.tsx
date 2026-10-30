@@ -9,17 +9,14 @@ import StatCard from '@/components/StatCard';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout';
 import { formatCurrency } from '@/lib/utils';
-import type { EmployeeOption } from '@/types/assets';
 import { isLowStock, type AccessoryDetail, type AccessoryLoan } from '@/types/inventory';
 
 export default function AccessoryShow({
     accessory,
     can,
-    employees,
 }: {
     accessory: AccessoryDetail;
     can: { update: boolean; checkout: boolean };
-    employees?: EmployeeOption[];
 }) {
     const [checkoutOpen, setCheckoutOpen] = useState(false);
     const [returning, setReturning] = useState<AccessoryLoan | null>(null);
@@ -79,8 +76,8 @@ export default function AccessoryShow({
                 />
             </div>
 
-            <section className="border-border mb-6 rounded-xl border bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-base font-semibold text-slate-900">Sedang dipinjam ({activeLoans.length})</h2>
+            <section className="border-border bg-card mb-6 rounded-xl border p-5">
+                <h2 className="mb-3 text-[15px] font-semibold text-zinc-950">Sedang dipinjam ({activeLoans.length})</h2>
                 {activeLoans.length === 0 ? (
                     <EmptyState icon={Package} title="Tidak ada yang sedang meminjam" />
                 ) : (
@@ -103,8 +100,8 @@ export default function AccessoryShow({
             </section>
 
             {pastLoans.length > 0 && (
-                <section className="border-border rounded-xl border bg-white p-5 shadow-sm">
-                    <h2 className="mb-3 text-base font-semibold text-slate-900">Riwayat pengembalian</h2>
+                <section className="border-border bg-card rounded-xl border p-5">
+                    <h2 className="mb-3 text-[15px] font-semibold text-zinc-950">Riwayat pengembalian</h2>
                     <ul className="divide-border divide-y">
                         {pastLoans.map((loan) => (
                             <li key={loan.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
@@ -129,13 +126,8 @@ export default function AccessoryShow({
                 target={{
                     field: 'employee_id',
                     label: 'Karyawan',
-                    placeholder: 'Pilih karyawan aktif',
-                    lazyProp: 'employees',
-                    options: employees?.map((employee) => ({
-                        value: String(employee.id),
-                        label: employee.name,
-                        hint: [employee.employee_number, employee.department].filter(Boolean).join(' · '),
-                    })),
+                    placeholder: 'Cari karyawan aktif',
+                    searchUrl: '/api/employees/search',
                 }}
             />
 
@@ -159,7 +151,7 @@ export default function AccessoryShow({
 function LoanSummary({ loan }: { loan: AccessoryLoan }) {
     return (
         <div>
-            <p className="text-sm font-medium text-slate-800">
+            <p className="text-sm font-medium text-zinc-800">
                 {loan.qty}× · {loan.employee ?? '—'}
             </p>
             <p className="text-muted-foreground text-xs">

@@ -6,13 +6,14 @@ import DataTable from '@/components/DataTable';
 import EmptyState from '@/components/EmptyState';
 import ExpiryBadge from '@/components/licenses/ExpiryBadge';
 import SeatMeter from '@/components/licenses/SeatMeter';
+import FilterTabs from '@/components/FilterTabs';
 import PageHeader from '@/components/PageHeader';
 import Pagination, { type Paginator } from '@/components/Pagination';
 import SearchInput from '@/components/SearchInput';
 import StatCard from '@/components/StatCard';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout';
-import { cn, formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import type { LicenseListItem, LicenseStatusFilter } from '@/types/licenses';
 
 interface Filters {
@@ -28,7 +29,7 @@ const statusOptions: { value: LicenseStatusFilter; label: string }[] = [
     { value: '', label: 'Semua' },
     { value: 'expiring', label: 'Segera habis' },
     { value: 'expired', label: 'Sudah habis' },
-    { value: 'full', label: 'Seat penuh' },
+    { value: 'full', label: 'Kuota penuh' },
 ];
 
 export default function LicensesIndex({
@@ -76,7 +77,7 @@ export default function LicensesIndex({
             header: 'Lisensi',
             cell: ({ row }) => (
                 <Link href={`/licenses/${row.original.id}`} className="block min-w-0 hover:underline">
-                    <p className="truncate font-medium text-slate-800">{row.original.name}</p>
+                    <p className="truncate font-medium text-zinc-800">{row.original.name}</p>
                     <p className="text-muted-foreground truncate text-xs">
                         {[row.original.manufacturer, row.original.license_type_label].filter(Boolean).join(' · ')}
                     </p>
@@ -85,7 +86,7 @@ export default function LicensesIndex({
         },
         {
             id: 'seats',
-            header: 'Seat',
+            header: 'Kuota',
             cell: ({ row }) => (
                 <SeatMeter used={row.original.seats_used} total={row.original.seats_total} className="w-40" />
             ),
@@ -113,7 +114,7 @@ export default function LicensesIndex({
 
             <PageHeader
                 title="Lisensi"
-                description="Lisensi software, pemakaian seat, dan masa berlaku."
+                description="Lisensi software, pemakaian kuota, dan masa berlaku."
                 breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Lisensi' }]}
                 actions={
                     can.create && (
@@ -129,7 +130,7 @@ export default function LicensesIndex({
             <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <StatCard label="Lisensi" value={summary.count} icon={KeyRound} />
                 <StatCard
-                    label="Seat terpakai"
+                    label="Kuota terpakai"
                     value={`${summary.seats_used} / ${summary.seats_total}`}
                     icon={Users}
                     tone="info"
@@ -143,36 +144,20 @@ export default function LicensesIndex({
                 <StatCard label="Biaya tahunan" value={formatCurrency(summary.annual_cost)} icon={Wallet} />
             </div>
 
-            <div className="border-border mb-4 flex flex-wrap items-center gap-3 rounded-xl border bg-white p-4 shadow-sm">
+            <div className="border-border bg-card mb-4 flex flex-wrap items-center gap-3 rounded-xl border p-4">
                 <SearchInput
                     defaultValue={filters.search}
                     placeholder="Cari nama lisensi atau manufaktur"
                     onSearch={(search) => visit({ search })}
                     className="sm:w-80"
                 />
-                <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Status lisensi">
-                    {statusOptions.map((option) => {
-                        const active = option.value === filters.status;
-
-                        return (
-                            <button
-                                key={option.value}
-                                type="button"
-                                role="radio"
-                                aria-checked={active}
-                                onClick={() => visit({ status: option.value })}
-                                className={cn(
-                                    'rounded-full border px-3 py-1.5 text-sm font-medium transition-colors',
-                                    active
-                                        ? 'border-primary bg-primary text-white'
-                                        : 'border-border bg-white text-slate-600 hover:bg-slate-50',
-                                )}
-                            >
-                                {option.label}
-                            </button>
-                        );
-                    })}
-                </div>
+                <FilterTabs
+                    variant="segmented"
+                    label="Status lisensi"
+                    tabs={statusOptions.map((option) => ({ value: option.value, label: option.label }))}
+                    value={filters.status}
+                    onChange={(status) => visit({ status })}
+                />
                 <div className="ml-auto flex gap-1" role="group" aria-label="Tampilan">
                     <Button
                         variant={view === 'cards' ? 'secondary' : 'ghost'}
@@ -208,12 +193,12 @@ export default function LicensesIndex({
                             <LicenseCard key={license.id} license={license} warningDays={warningDays} />
                         ))}
                     </div>
-                    <div className="border-border mt-4 overflow-hidden rounded-xl border bg-white">
+                    <div className="border-border bg-card mt-4 overflow-hidden rounded-xl border">
                         <Pagination paginator={licenses} />
                     </div>
                 </>
             ) : (
-                <div className="border-border overflow-hidden rounded-xl border bg-white shadow-sm">
+                <div className="border-border bg-card overflow-hidden rounded-xl border">
                     <DataTable columns={columns} data={licenses.data} />
                     <Pagination paginator={licenses} />
                 </div>
@@ -226,10 +211,10 @@ function LicenseCard({ license, warningDays }: { license: LicenseListItem; warni
     return (
         <Link
             href={`/licenses/${license.id}`}
-            className="border-border group flex flex-col gap-4 rounded-xl border bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+            className="border-border group bg-card flex flex-col gap-4 rounded-xl border p-5 transition-colors hover:border-zinc-300"
         >
             <div className="min-w-0">
-                <p className="truncate font-semibold text-slate-900 group-hover:underline">{license.name}</p>
+                <p className="truncate font-semibold text-zinc-900 group-hover:underline">{license.name}</p>
                 <p className="text-muted-foreground truncate text-xs">
                     {[license.manufacturer, license.license_type_label, license.category].filter(Boolean).join(' · ')}
                 </p>
@@ -237,7 +222,7 @@ function LicenseCard({ license, warningDays }: { license: LicenseListItem; warni
             <SeatMeter used={license.seats_used} total={license.seats_total} />
             <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
                 <ExpiryBadge expiresAt={license.expires_at} warningDays={warningDays} />
-                <span className="text-sm text-slate-700 tabular-nums">
+                <span className="text-sm text-zinc-700 tabular-nums">
                     {license.annual_cost === null ? '—' : `${formatCurrency(license.annual_cost)}/thn`}
                 </span>
             </div>

@@ -36,6 +36,8 @@ class Asset extends Model
     protected $fillable = [
         'asset_tag',
         'serial_number',
+        'imei',
+        'phone_number',
         'asset_model_id',
         'status',
         'assigned_employee_id',

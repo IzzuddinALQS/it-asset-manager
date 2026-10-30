@@ -27,6 +27,6 @@ class RetireAssetController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        return back()->with('success', "Aset {$asset->asset_tag} dipensiunkan.");
+        return back()->with('success', "Inventaris {$asset->asset_tag} dipensiunkan.");
     }
 }

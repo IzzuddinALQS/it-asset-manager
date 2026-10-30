@@ -6,8 +6,8 @@ use App\Enums\EmploymentStatus;
 use App\Http\Controllers\Controller;
 use App\Models\AccessoryCheckout;
 use App\Models\Asset;
-use App\Models\Department;
 use App\Models\Employee;
+use App\Models\HerdSyncRun;
 use App\Models\LicenseSeat;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -59,18 +59,24 @@ class EmployeeController extends Controller
                 'licenses_count' => (int) $employee->getAttribute('licenses_count'),
             ]);
 
+        $lastSync = HerdSyncRun::query()->latest('started_at')->first();
+
         return Inertia::render('Directory/Index', [
+            'lastSync' => $lastSync === null ? null : [
+                'status' => $lastSync->status,
+                'started_at' => $lastSync->started_at->toIso8601String(),
+                'created_count' => $lastSync->created_count,
+                'updated_count' => $lastSync->updated_count,
+                'offboarding_count' => $lastSync->offboarding_count,
+                'error_message' => $lastSync->error_message,
+            ],
+            'canSync' => $request->user()->isAdmin(),
             'filters' => [
                 'search' => $search,
                 'status' => $status->value ?? '',
                 'department_id' => $departmentId === null ? '' : (string) $departmentId,
             ],
             'employees' => $employees,
-            'departments' => Department::query()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (Department $department): array => ['id' => $department->id, 'name' => $department->name])
-                ->all(),
             'statuses' => array_map(
                 fn (EmploymentStatus $status): array => ['value' => $status->value, 'label' => $status->label()],
                 EmploymentStatus::cases(),

@@ -42,8 +42,8 @@ class StoreMaintenanceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'asset_id.required' => 'Pilih aset yang akan di-maintenance.',
-            'asset_id.exists' => 'Aset tidak ditemukan.',
+            'asset_id.required' => 'Pilih inventaris yang akan di-maintenance.',
+            'asset_id.exists' => 'Inventaris tidak ditemukan.',
             'type.required' => 'Jenis maintenance wajib dipilih.',
             'title.required' => 'Judul tiket wajib diisi.',
             'supplier_id.required_if' => 'Pilih vendor yang menangani.',

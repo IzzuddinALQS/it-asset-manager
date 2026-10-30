@@ -5,6 +5,8 @@ import { useState, type FormEvent } from 'react';
 import DataTable from '@/components/DataTable';
 import FormField from '@/components/FormField';
 import OptionSelect from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
+import { optionsUrl } from '@/lib/options';
 import PageHeader from '@/components/PageHeader';
 import SettingsNav from '@/components/settings/SettingsNav';
 import { Button } from '@/components/ui/button';
@@ -15,6 +17,12 @@ import { Textarea } from '@/components/ui/textarea';
 import AppLayout from '@/layouts/AppLayout';
 import { useConfirm } from '@/lib/confirm';
 import type { EnumOption } from '@/types/assets';
+
+/** Option lists backed by a database table are searched instead of shipped with the page. */
+const searchSources: Record<string, { url: string; params?: Record<string, string> }> = {
+    assetCategories: { url: optionsUrl('categories'), params: { category_type: 'asset' } },
+    manufacturers: { url: optionsUrl('manufacturers') },
+};
 
 type FieldValue = string | number | boolean | null;
 
@@ -65,7 +73,7 @@ function MasterDataPage({ type, types, fields, records, options }: MasterDataPro
     const remove = async (record: MasterRecord): Promise<void> => {
         const confirmed = await confirm({
             title: `Hapus ${label.toLowerCase()} ${String(record.name)}?`,
-            description: 'Data yang masih dipakai aset, inventaris, atau lisensi tidak bisa dihapus.',
+            description: 'Data yang masih dipakai inventaris, komponen, aksesori, atau lisensi tidak bisa dihapus.',
             confirmLabel: 'Hapus',
             destructive: true,
         });
@@ -80,7 +88,7 @@ function MasterDataPage({ type, types, fields, records, options }: MasterDataPro
             id: field.key,
             header: field.label,
             cell: ({ row }) => (
-                <span className={field.key === 'name' ? 'font-medium text-slate-800' : undefined}>
+                <span className={field.key === 'name' ? 'font-medium text-zinc-800' : undefined}>
                     {display(field, row.original[field.key])}
                 </span>
             ),
@@ -116,8 +124,8 @@ function MasterDataPage({ type, types, fields, records, options }: MasterDataPro
             <Head title={label} />
 
             <PageHeader
-                title="Pengaturan"
-                breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Data master' }, { label }]}
+                title="Master Data"
+                breadcrumbs={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Master Data' }, { label }]}
                 actions={
                     <Button onClick={() => setEditing('new')}>
                         <Plus /> Tambah {label.toLowerCase()}
@@ -126,7 +134,7 @@ function MasterDataPage({ type, types, fields, records, options }: MasterDataPro
             />
             <SettingsNav active={`master:${type}`} />
 
-            <div className="border-border overflow-hidden rounded-xl border bg-white shadow-sm">
+            <div className="border-border bg-card overflow-hidden rounded-xl border">
                 <DataTable columns={columns} data={records} emptyMessage={`Belum ada ${label.toLowerCase()}.`} />
             </div>
 
@@ -194,7 +202,7 @@ function RecordDialog({
 
                         if (field.input === 'checkbox') {
                             return (
-                                <label key={field.key} className="flex items-center gap-2 text-sm text-slate-700">
+                                <label key={field.key} className="flex items-center gap-2 text-sm text-zinc-700">
                                     <Checkbox
                                         checked={Boolean(value)}
                                         onCheckedChange={(checked) => setData(field.key, checked === true)}
@@ -212,7 +220,16 @@ function RecordDialog({
                                 error={error}
                                 required={field.required}
                             >
-                                {field.input === 'select' ? (
+                                {field.input === 'select' && field.options && field.options in searchSources ? (
+                                    <SearchSelect
+                                        id={id}
+                                        {...searchSources[field.options]}
+                                        value={value === null ? null : String(value)}
+                                        onChange={(next) => setData(field.key, next)}
+                                        emptyLabel={field.required ? undefined : 'Tidak ada'}
+                                        invalid={error !== undefined}
+                                    />
+                                ) : field.input === 'select' ? (
                                     <OptionSelect
                                         id={id}
                                         value={value === null ? null : String(value)}
@@ -248,7 +265,7 @@ function RecordDialog({
                         <Button type="button" variant="ghost" onClick={onClose}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
+                        <Button type="submit" loading={processing}>
                             Simpan
                         </Button>
                     </DialogFooter>

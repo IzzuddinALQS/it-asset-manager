@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Assets;
 
 use App\Actions\Assets\CreateAsset;
+use App\Actions\Assets\RenderAssetQrCode;
 use App\Actions\Assets\UpdateAsset;
 use App\Enums\AssetStatus;
-use App\Enums\CategoryType;
 use App\Enums\RetireReason;
 use App\Http\Controllers\Concerns\ProvidesMaintenanceOptions;
 use App\Http\Controllers\Concerns\ResolvesActor;
@@ -14,15 +14,10 @@ use App\Http\Requests\Assets\StoreAssetRequest;
 use App\Http\Requests\Assets\UpdateAssetRequest;
 use App\Models\Asset;
 use App\Models\AssetLog;
-use App\Models\AssetModel;
-use App\Models\Category;
 use App\Models\Component;
 use App\Models\ComponentInstallation;
-use App\Models\Employee;
 use App\Models\LicenseSeat;
-use App\Models\Location;
 use App\Models\Maintenance;
-use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,6 +57,8 @@ class AssetController extends Controller
                 $query->where(function (Builder $query) use ($term): void {
                     $query->where('asset_tag', 'ilike', $term)
                         ->orWhere('serial_number', 'ilike', $term)
+                        ->orWhere('imei', 'ilike', $term)
+                        ->orWhere('phone_number', 'ilike', $term)
                         ->orWhereHas('assetModel', fn (Builder $model) => $model->where('name', 'ilike', $term))
                         ->orWhereHas('assignedEmployee', fn (Builder $employee) => $employee->where('name', 'ilike', $term));
                 });
@@ -121,8 +118,6 @@ class AssetController extends Controller
                     $case->value => (int) ($statusCounts[$case->value] ?? 0),
                 ])
                 ->all(),
-            'categories' => $this->assetCategories(),
-            'locations' => $this->locationOptions(),
         ]);
     }
 
@@ -130,7 +125,7 @@ class AssetController extends Controller
     {
         $this->authorize('create', Asset::class);
 
-        return Inertia::render('Assets/Create', $this->formOptions());
+        return Inertia::render('Assets/Create');
     }
 
     public function store(StoreAssetRequest $request, CreateAsset $createAsset): RedirectResponse
@@ -139,10 +134,10 @@ class AssetController extends Controller
 
         return redirect()
             ->route('assets.show', $asset)
-            ->with('success', "Aset {$asset->asset_tag} berhasil dicatat sebagai menunggu.");
+            ->with('success', "Inventaris {$asset->asset_tag} berhasil dicatat sebagai menunggu.");
     }
 
-    public function show(Request $request, Asset $asset): Response
+    public function show(Request $request, Asset $asset, RenderAssetQrCode $renderQrCode): Response
     {
         $this->authorize('view', $asset);
 
@@ -173,6 +168,10 @@ class AssetController extends Controller
                 'id' => $asset->id,
                 'asset_tag' => $asset->asset_tag,
                 'serial_number' => $asset->serial_number,
+                'imei' => $asset->imei,
+                'phone_number' => $asset->phone_number,
+                // The QR encodes the asset's permanent URL, so it exists from the moment the asset is saved.
+                'qr_svg' => $renderQrCode->handle($asset, 180),
                 'status' => $asset->status->value,
                 'status_label' => $asset->status->label(),
                 'status_note' => $this->statusNote($asset->status),
@@ -258,18 +257,10 @@ class AssetController extends Controller
                 'checkout' => ($user?->can('checkout', $asset) ?? false) && $asset->status === AssetStatus::Ready,
                 'checkin' => ($user?->can('checkin', $asset) ?? false) && $asset->status === AssetStatus::Deployed,
                 'retire' => ($user?->can('retire', $asset) ?? false) && $asset->status->canTransitionTo(AssetStatus::Retired),
-                'printLabel' => $asset->status !== AssetStatus::Pending,
                 'installComponent' => ($user?->can('install', Component::class) ?? false) && ! $asset->isRetired(),
                 'sendToMaintenance' => ($user?->can('create', Maintenance::class) ?? false) && $canOpenTicket,
             ],
             ...$this->maintenanceEnumOptions(),
-            // Loaded only when the maintenance dialog opens (partial reload with `only: ['suppliers']`).
-            'suppliers' => Inertia::optional(fn (): array => $this->supplierOptions()),
-            // Loaded only when the checkout dialog opens (partial reload with `only: ['employees']`).
-            'employees' => Inertia::optional(fn (): array => $this->activeEmployeeOptions()),
-            // Loaded only when the install dialog opens (partial reload with `only: ['componentOptions']`).
-            'componentOptions' => Inertia::optional(fn (): array => $this->componentOptions()),
-            'locations' => $this->locationOptions(),
             'retireReasons' => collect(RetireReason::cases())
                 ->map(fn (RetireReason $reason): array => [
                     'value' => $reason->value,
@@ -284,13 +275,14 @@ class AssetController extends Controller
         $this->authorize('update', $asset);
 
         return Inertia::render('Assets/Edit', [
-            ...$this->formOptions(),
             'asset' => [
                 'id' => $asset->id,
                 'asset_tag' => $asset->asset_tag,
                 'status_label' => $asset->status->label(),
                 'asset_model_id' => $asset->asset_model_id,
                 'serial_number' => $asset->serial_number,
+                'imei' => $asset->imei,
+                'phone_number' => $asset->phone_number,
                 'location_id' => $asset->location_id,
                 'supplier_id' => $asset->supplier_id,
                 'purchase_order' => $asset->purchase_order,
@@ -308,107 +300,17 @@ class AssetController extends Controller
 
         return redirect()
             ->route('assets.show', $asset)
-            ->with('success', 'Data aset diperbarui.');
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function formOptions(): array
-    {
-        return [
-            'models' => AssetModel::query()
-                ->with(['category:id,name', 'manufacturer:id,name'])
-                ->whereHas('category', fn (Builder $query) => $query->where('type', CategoryType::Asset))
-                ->orderBy('name')
-                ->get()
-                ->map(fn (AssetModel $model): array => [
-                    'id' => $model->id,
-                    'name' => $model->name,
-                    'model_number' => $model->model_number,
-                    'category' => $model->category?->name,
-                    'manufacturer' => $model->manufacturer?->name,
-                ])
-                ->all(),
-            'locations' => $this->locationOptions(),
-            'suppliers' => Supplier::query()
-                ->orderBy('name')
-                ->get(['id', 'name'])
-                ->map(fn (Supplier $supplier): array => ['id' => $supplier->id, 'name' => $supplier->name])
-                ->all(),
-        ];
-    }
-
-    /**
-     * @return array<int, array{id: int, name: string}>
-     */
-    private function locationOptions(): array
-    {
-        return Location::query()
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(fn (Location $location): array => ['id' => $location->id, 'name' => $location->name])
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{id: int, name: string}>
-     */
-    private function assetCategories(): array
-    {
-        return Category::query()
-            ->where('type', CategoryType::Asset)
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(fn (Category $category): array => ['id' => $category->id, 'name' => $category->name])
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{id: int, name: string, employee_number: string, department: string|null}>
-     */
-    private function activeEmployeeOptions(): array
-    {
-        return Employee::query()
-            ->active()
-            ->with('department:id,name')
-            ->orderBy('name')
-            ->get(['id', 'name', 'employee_number', 'department_id'])
-            ->map(fn (Employee $employee): array => [
-                'id' => $employee->id,
-                'name' => $employee->name,
-                'employee_number' => $employee->employee_number,
-                'department' => $employee->department?->name,
-            ])
-            ->all();
-    }
-
-    /**
-     * @return array<int, array{id: int, name: string, spec: string|null, qty_available: int}>
-     */
-    private function componentOptions(): array
-    {
-        return Component::query()
-            ->with('stock')
-            ->orderBy('name')
-            ->get(['id', 'name', 'spec', 'qty_total'])
-            ->map(fn (Component $component): array => [
-                'id' => $component->id,
-                'name' => $component->name,
-                'spec' => $component->spec,
-                'qty_available' => $component->stock->qty_available ?? $component->qty_total,
-            ])
-            ->all();
+            ->with('success', 'Data inventaris diperbarui.');
     }
 
     private function statusNote(AssetStatus $status): string
     {
         return match ($status) {
-            AssetStatus::Pending => 'Aset baru dicatat. Cetak label dan tandai siap pakai sebelum dipinjamkan.',
-            AssetStatus::Ready => 'Aset ada di gudang IT dan siap dipinjamkan ke karyawan atau lokasi.',
-            AssetStatus::Deployed => 'Aset sedang dipegang karyawan atau ditempatkan di lokasi.',
-            AssetStatus::Maintenance => 'Aset sedang diperbaiki. Selesaikan maintenance untuk mengembalikannya.',
-            AssetStatus::Retired => 'Aset sudah dipensiunkan dan tidak bisa dipinjamkan lagi.',
+            AssetStatus::Pending => 'Inventaris baru dicatat. Cetak label dan tandai siap guna sebelum dipinjamkan.',
+            AssetStatus::Ready => 'Inventaris ada di gudang IT dan siap dipinjamkan ke karyawan atau lokasi.',
+            AssetStatus::Deployed => 'Inventaris sedang dipegang karyawan atau ditempatkan di lokasi.',
+            AssetStatus::Maintenance => 'Inventaris sedang diperbaiki. Selesaikan maintenance untuk mengembalikannya.',
+            AssetStatus::Retired => 'Inventaris sudah dipensiunkan dan tidak bisa dipinjamkan lagi.',
         };
     }
 }

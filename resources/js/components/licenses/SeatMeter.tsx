@@ -10,13 +10,13 @@ export default function SeatMeter({ used, total, className }: { used: number; to
     return (
         <div className={className}>
             <div className="mb-1 flex items-baseline justify-between text-xs">
-                <span className="text-muted-foreground">Seat terpakai</span>
-                <span className="font-semibold text-slate-800 tabular-nums">
+                <span className="text-muted-foreground">Kuota terpakai</span>
+                <span className="font-semibold text-zinc-800 tabular-nums">
                     {used} / {total}
                 </span>
             </div>
             <div
-                className="h-2 overflow-hidden rounded-full bg-slate-100"
+                className="h-2 overflow-hidden rounded-full bg-zinc-100"
                 role="meter"
                 aria-valuemin={0}
                 aria-valuemax={total}

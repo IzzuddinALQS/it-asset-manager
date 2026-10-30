@@ -42,7 +42,7 @@ class CompleteMaintenanceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'return_status.required' => 'Pilih status aset setelah maintenance.',
+            'return_status.required' => 'Pilih status inventaris setelah maintenance.',
             'components.*.component_id.required' => 'Pilih komponen yang dipakai.',
             'components.*.component_id.distinct' => 'Komponen yang sama dipilih lebih dari sekali.',
             'components.*.qty.min' => 'Jumlah minimal 1.',

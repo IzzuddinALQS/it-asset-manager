@@ -60,8 +60,8 @@ it('counts assets per status within the purchase period', function (): void {
         ->assertInertia(fn ($page) => $page
             ->component('Reports/Index')
             ->where('filters.from', '2026-01-01')
-            ->where('report.rows.1', ['group' => 'Siap Pakai', 'asset_count' => 2, 'total_cost' => 20_000_000])
-            ->where('report.rows.2', ['group' => 'Dipakaikan', 'asset_count' => 1, 'total_cost' => 5_000_000])
+            ->where('report.rows.1', ['group' => 'Siap Guna', 'asset_count' => 2, 'total_cost' => 20_000_000])
+            ->where('report.rows.2', ['group' => 'Digunakan', 'asset_count' => 1, 'total_cost' => 5_000_000])
             ->where('report.totals.asset_count', 3)
             ->where('report.totals.total_cost', 25_000_000));
 });
@@ -102,7 +102,7 @@ it('depreciates asset value straight-line and skips retired assets', function ()
             ->where('report.rows.0.book_value', 6_000_000));
 });
 
-it('reports license seat utilization', function (): void {
+it('reports license kuota utilization', function (): void {
     $license = License::factory()->create(['name' => 'Adobe CC', 'seats_total' => 4, 'expires_at' => '2027-01-31']);
     LicenseSeat::factory()->count(3)->for($license)->create();
     LicenseSeat::factory()->for($license)->create(['released_at' => now()]);

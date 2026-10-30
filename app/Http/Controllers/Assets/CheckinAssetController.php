@@ -27,6 +27,6 @@ class CheckinAssetController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        return back()->with('success', "Aset {$asset->asset_tag} dikembalikan dengan status {$asset->status->label()}.");
+        return back()->with('success', "Inventaris {$asset->asset_tag} dikembalikan dengan status {$asset->status->label()}.");
     }
 }

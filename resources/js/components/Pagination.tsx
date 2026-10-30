@@ -28,16 +28,16 @@ export default function Pagination({
     const next = paginator.links[paginator.links.length - 1];
 
     return (
-        <div className="border-border text-muted-foreground flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-xs">
+        <div className="border-border text-muted-foreground flex flex-wrap items-center justify-between gap-3 border-t px-4 py-3 text-[13px]">
             <p>
-                Menampilkan <span className="font-semibold text-slate-700">{paginator.from ?? 0}</span>–
-                <span className="font-semibold text-slate-700">{paginator.to ?? 0}</span> dari{' '}
-                <span className="font-semibold text-slate-700">{paginator.total}</span> data
+                Menampilkan <span className="font-semibold text-zinc-700">{paginator.from ?? 0}</span>–
+                <span className="font-semibold text-zinc-700">{paginator.to ?? 0}</span> dari{' '}
+                <span className="font-semibold text-zinc-700">{paginator.total}</span> data
             </p>
 
             <div className="flex items-center gap-1">
                 <PageLink href={previous?.url ?? null} label="Sebelumnya">
-                    <ChevronLeft className="size-3.5" />
+                    <ChevronLeft className="size-4" />
                 </PageLink>
 
                 {paginator.links.slice(1, -1).map((link, index) => {
@@ -55,10 +55,10 @@ export default function Pagination({
                             href={link.url ?? '#'}
                             preserveScroll
                             className={cn(
-                                'flex h-8 min-w-8 items-center justify-center rounded-md border px-1.5 text-[11px] font-medium',
+                                'flex h-8 min-w-8 items-center justify-center rounded-md px-2 text-[13px] font-medium tabular-nums transition-colors',
                                 link.active
-                                    ? 'border-primary bg-primary text-white'
-                                    : 'border-border bg-white text-slate-600 hover:bg-slate-50',
+                                    ? 'bg-zinc-900 text-white'
+                                    : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900',
                                 link.url === null && 'pointer-events-none opacity-40',
                             )}
                             dangerouslySetInnerHTML={{ __html: link.label }}
@@ -67,7 +67,7 @@ export default function Pagination({
                 })}
 
                 <PageLink href={next?.url ?? null} label="Berikutnya">
-                    <ChevronRight className="size-3.5" />
+                    <ChevronRight className="size-4" />
                 </PageLink>
             </div>
         </div>
@@ -81,7 +81,7 @@ function PageLink({ href, label, children }: { href: string | null; label: strin
             preserveScroll
             aria-label={label}
             className={cn(
-                'border-border flex size-8 items-center justify-center rounded-md border bg-white text-slate-600 hover:bg-slate-50',
+                'border-border flex size-8 items-center justify-center rounded-md border bg-white text-zinc-600 transition-colors hover:bg-zinc-50 hover:text-zinc-900',
                 href === null && 'pointer-events-none opacity-40',
             )}
         >

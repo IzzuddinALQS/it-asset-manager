@@ -29,12 +29,6 @@ export interface StockFormData {
     location_id: number | null;
 }
 
-export interface StockFormOptions {
-    categories: Option[];
-    manufacturers: Option[];
-    locations: Option[];
-}
-
 export interface AccessoryLoan {
     id: number;
     employee: string | null;

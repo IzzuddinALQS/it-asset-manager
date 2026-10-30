@@ -7,7 +7,7 @@ import EmptyState from '@/components/EmptyState';
 import FormField from '@/components/FormField';
 import ExpiryBadge from '@/components/licenses/ExpiryBadge';
 import SeatMeter from '@/components/licenses/SeatMeter';
-import OptionSelect from '@/components/OptionSelect';
+import SearchSelect from '@/components/SearchSelect';
 import PageHeader from '@/components/PageHeader';
 import { Button } from '@/components/ui/button';
 import {
@@ -20,21 +20,16 @@ import {
 } from '@/components/ui/dialog';
 import AppLayout from '@/layouts/AppLayout';
 import { cn, formatCurrency, formatDate } from '@/lib/utils';
-import type { EmployeeOption } from '@/types/assets';
-import type { AssetSeatOption, LicenseDetail, LicenseSeatRow } from '@/types/licenses';
+import type { LicenseDetail, LicenseSeatRow } from '@/types/licenses';
 
 export default function LicenseShow({
     license,
     warningDays,
     can,
-    employees,
-    assets,
 }: {
     license: LicenseDetail;
     warningDays: number;
     can: { update: boolean; assignSeat: boolean };
-    employees?: EmployeeOption[];
-    assets?: AssetSeatOption[];
 }) {
     const [assignOpen, setAssignOpen] = useState(false);
     const [releasing, setReleasing] = useState<LicenseSeatRow | null>(null);
@@ -76,7 +71,7 @@ export default function LicenseShow({
                     <div className="flex flex-wrap justify-end gap-2">
                         {can.assignSeat && (
                             <Button onClick={() => setAssignOpen(true)} disabled={isFull}>
-                                <UserPlus /> Beri seat
+                                <UserPlus /> Beri kuota
                             </Button>
                         )}
                         {can.update && (
@@ -91,11 +86,11 @@ export default function LicenseShow({
             />
 
             <div className="mb-6 grid gap-4 lg:grid-cols-3">
-                <section className="border-border rounded-xl border bg-white p-5 shadow-sm lg:col-span-2">
+                <section className="border-border bg-card rounded-xl border p-5 lg:col-span-2">
                     <SeatMeter used={license.seats_used} total={license.seats_total} />
                     <p className="text-muted-foreground mt-2 text-xs">
                         {isFull
-                            ? 'Semua seat terpakai. Lepas seat atau tambah jumlah seat untuk memberi seat baru.'
+                            ? 'Semua kuota terpakai. Lepas kuota atau tambah jumlah kuota untuk memberi kuota baru.'
                             : `${license.seats_total - license.seats_used} seat tersedia.`}
                     </p>
                     <dl className="mt-5 grid gap-4 text-sm sm:grid-cols-2">
@@ -117,16 +112,16 @@ export default function LicenseShow({
                         <Detail label="Tanggal pembelian">{formatDate(license.purchase_date)}</Detail>
                     </dl>
                 </section>
-                <section className="border-border rounded-xl border bg-white p-5 shadow-sm">
-                    <h2 className="mb-2 text-sm font-semibold text-slate-900">Catatan</h2>
-                    <p className="text-sm whitespace-pre-line text-slate-600">{license.notes || '—'}</p>
+                <section className="border-border bg-card rounded-xl border p-5">
+                    <h2 className="mb-2 text-[15px] font-semibold text-zinc-950">Catatan</h2>
+                    <p className="text-sm whitespace-pre-line text-zinc-600">{license.notes || '—'}</p>
                 </section>
             </div>
 
-            <section className="border-border mb-6 rounded-xl border bg-white p-5 shadow-sm">
-                <h2 className="mb-3 text-base font-semibold text-slate-900">Seat aktif ({activeSeats.length})</h2>
+            <section className="border-border bg-card mb-6 rounded-xl border p-5">
+                <h2 className="mb-3 text-[15px] font-semibold text-zinc-950">Kuota aktif ({activeSeats.length})</h2>
                 {activeSeats.length === 0 ? (
-                    <EmptyState icon={KeyRound} title="Belum ada seat yang diberikan" />
+                    <EmptyState icon={KeyRound} title="Belum ada kuota yang diberikan" />
                 ) : (
                     <ul className="divide-border divide-y">
                         {activeSeats.map((seat) => (
@@ -149,8 +144,8 @@ export default function LicenseShow({
             </section>
 
             {pastSeats.length > 0 && (
-                <section className="border-border rounded-xl border bg-white p-5 shadow-sm">
-                    <h2 className="mb-3 text-base font-semibold text-slate-900">Riwayat seat</h2>
+                <section className="border-border bg-card rounded-xl border p-5">
+                    <h2 className="mb-3 text-[15px] font-semibold text-zinc-950">Riwayat kuota</h2>
                     <ul className="divide-border divide-y">
                         {pastSeats.map((seat) => (
                             <li key={seat.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
@@ -164,26 +159,20 @@ export default function LicenseShow({
                 </section>
             )}
 
-            <AssignSeatDialog
-                open={assignOpen}
-                onOpenChange={setAssignOpen}
-                license={license}
-                employees={employees}
-                assets={assets}
-            />
+            <AssignSeatDialog open={assignOpen} onOpenChange={setAssignOpen} license={license} />
 
             <ConfirmDialog
                 open={releasing !== null}
                 onOpenChange={(open) => !open && setReleasing(null)}
                 onConfirm={release}
                 processing={releaseProcessing}
-                title="Lepas seat?"
+                title="Lepas kuota?"
                 description={
                     releasing === null
                         ? undefined
-                        : `Seat ${license.name} milik ${holderName(releasing)} dikembalikan ke kuota lisensi.`
+                        : `Kuota ${license.name} milik ${holderName(releasing)} dikembalikan ke lisensi.`
                 }
-                confirmLabel="Lepas seat"
+                confirmLabel="Lepas kuota"
                 destructive
             />
         </AppLayout>
@@ -197,8 +186,8 @@ function holderName(seat: LicenseSeatRow): string {
 function Detail({ label, children }: { label: string; children: React.ReactNode }) {
     return (
         <div>
-            <dt className="text-muted-foreground text-xs">{label}</dt>
-            <dd className="mt-1 text-slate-800">{children}</dd>
+            <dt className="text-muted-foreground text-[13px]">{label}</dt>
+            <dd className="mt-1 font-medium text-zinc-900">{children}</dd>
         </div>
     );
 }
@@ -212,19 +201,19 @@ function SeatHolder({ seat }: { seat: LicenseSeatRow }) {
 
     return (
         <div className="flex items-center gap-3">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-zinc-100 text-zinc-500">
                 <Icon className="size-4" />
             </span>
             <div>
                 {seat.asset !== null ? (
                     <Link
                         href={`/assets/${seat.asset.id}`}
-                        className="text-sm font-medium text-slate-800 hover:underline"
+                        className="text-sm font-medium text-zinc-800 hover:underline"
                     >
                         {seat.asset.asset_tag}
                     </Link>
                 ) : (
-                    <p className="text-sm font-medium text-slate-800">{seat.employee?.name ?? '—'}</p>
+                    <p className="text-sm font-medium text-zinc-800">{seat.employee?.name ?? '—'}</p>
                 )}
                 <p className="text-muted-foreground text-xs">{detail}</p>
             </div>
@@ -242,14 +231,10 @@ function AssignSeatDialog({
     open,
     onOpenChange,
     license,
-    employees,
-    assets,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     license: LicenseDetail;
-    employees?: EmployeeOption[];
-    assets?: AssetSeatOption[];
 }) {
     const { data, setData, post, processing, errors, reset, clearErrors } = useForm<AssignForm>({
         holder_type: 'employee',
@@ -258,10 +243,6 @@ function AssignSeatDialog({
     });
 
     const changeOpen = (next: boolean): void => {
-        if (next && (employees === undefined || assets === undefined)) {
-            router.reload({ only: ['employees', 'assets'] });
-        }
-
         if (!next) {
             reset();
             clearErrors();
@@ -276,13 +257,6 @@ function AssignSeatDialog({
     };
 
     const isEmployee = data.holder_type === 'employee';
-    const options = isEmployee
-        ? employees?.map((employee) => ({
-              value: String(employee.id),
-              label: employee.name,
-              hint: [employee.employee_number, employee.department].filter(Boolean).join(' · '),
-          }))
-        : assets?.map((asset) => ({ value: String(asset.id), label: asset.asset_tag, hint: asset.model }));
     const field = isEmployee ? 'employee_id' : 'asset_id';
     const selected = data[field];
 
@@ -291,17 +265,17 @@ function AssignSeatDialog({
             <DialogContent className="sm:max-w-lg">
                 <form onSubmit={submit} className="space-y-5">
                     <DialogHeader>
-                        <DialogTitle>Beri seat {license.name}</DialogTitle>
+                        <DialogTitle>Beri kuota {license.name}</DialogTitle>
                         <DialogDescription>
                             {license.seats_total - license.seats_used} dari {license.seats_total} seat tersedia.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Penerima seat">
+                    <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Penerima kuota">
                         {(
                             [
                                 ['employee', 'Karyawan', User],
-                                ['asset', 'Aset', Laptop],
+                                ['asset', 'Inventaris', Laptop],
                             ] as const
                         ).map(([value, label, Icon]) => (
                             <button
@@ -317,7 +291,7 @@ function AssignSeatDialog({
                                     'flex items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
                                     data.holder_type === value
                                         ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-border text-slate-600 hover:bg-slate-50',
+                                        : 'border-border text-zinc-600 hover:bg-zinc-50',
                                 )}
                             >
                                 <Icon className="size-4" /> {label}
@@ -326,20 +300,19 @@ function AssignSeatDialog({
                     </div>
 
                     <FormField
-                        label={isEmployee ? 'Karyawan' : 'Aset'}
+                        label={isEmployee ? 'Karyawan' : 'Inventaris'}
                         htmlFor="holder_id"
                         error={errors[field]}
                         required
                     >
-                        <OptionSelect
+                        <SearchSelect
                             key={field}
                             id="holder_id"
+                            url={isEmployee ? '/api/employees/search' : '/api/assets/search'}
                             value={selected === null ? null : String(selected)}
                             onChange={(value) => setData(field, value === null ? null : Number(value))}
-                            options={options ?? []}
-                            placeholder={
-                                options === undefined ? 'Memuat…' : isEmployee ? 'Pilih karyawan aktif' : 'Pilih aset'
-                            }
+                            placeholder={isEmployee ? 'Cari karyawan aktif' : 'Cari inventaris'}
+                            searchPlaceholder={isEmployee ? 'Ketik nama atau nomor…' : 'Ketik tag, serial, atau model…'}
                             invalid={errors[field] !== undefined}
                         />
                     </FormField>
@@ -348,8 +321,8 @@ function AssignSeatDialog({
                         <Button type="button" variant="outline" onClick={() => changeOpen(false)}>
                             Batal
                         </Button>
-                        <Button type="submit" disabled={processing}>
-                            Beri seat
+                        <Button type="submit" loading={processing}>
+                            Beri kuota
                         </Button>
                     </DialogFooter>
                 </form>

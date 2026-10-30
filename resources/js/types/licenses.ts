@@ -1,4 +1,4 @@
-import type { EnumOption, Option } from '@/types/assets';
+import type { EnumOption } from '@/types/assets';
 
 export type LicenseStatusFilter = '' | 'expiring' | 'expired' | 'full';
 
@@ -35,16 +35,7 @@ export interface LicenseDetail extends Omit<LicenseListItem, 'seats_used'> {
 }
 
 export interface LicenseFormOptions {
-    categories: Option[];
-    manufacturers: Option[];
-    suppliers: Option[];
     licenseTypes: EnumOption[];
-}
-
-export interface AssetSeatOption {
-    id: number;
-    asset_tag: string;
-    model: string | null;
 }
 
 /**

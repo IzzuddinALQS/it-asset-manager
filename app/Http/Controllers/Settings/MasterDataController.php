@@ -33,22 +33,12 @@ class MasterDataController extends Controller
             ),
             'fields' => $type->fields(),
             'records' => $this->records($type),
+            // Category and manufacturer pickers search through /api/options instead.
             'options' => [
                 'categoryTypes' => array_map(
                     fn (CategoryType $categoryType): array => ['value' => $categoryType->value, 'label' => $categoryType->label()],
                     CategoryType::cases(),
                 ),
-                'assetCategories' => Category::query()
-                    ->where('type', CategoryType::Asset)
-                    ->orderBy('name')
-                    ->get(['id', 'name'])
-                    ->map(fn (Category $category): array => ['value' => (string) $category->id, 'label' => $category->name])
-                    ->all(),
-                'manufacturers' => Manufacturer::query()
-                    ->orderBy('name')
-                    ->get(['id', 'name'])
-                    ->map(fn (Manufacturer $manufacturer): array => ['value' => (string) $manufacturer->id, 'label' => $manufacturer->name])
-                    ->all(),
             ],
         ]);
     }

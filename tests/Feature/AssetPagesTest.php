@@ -155,30 +155,20 @@ describe('show', function (): void {
                 ->component('Assets/Show')
                 ->where('can', $expected));
     })->with([
-        'admin on pending' => ['admin', fn () => Asset::factory()->pending()->create(), ['update' => true, 'tag' => true, 'checkout' => false, 'checkin' => false, 'retire' => false, 'printLabel' => false, 'installComponent' => true, 'sendToMaintenance' => false]],
-        'admin on ready' => ['admin', fn () => Asset::factory()->create(), ['update' => true, 'tag' => false, 'checkout' => true, 'checkin' => false, 'retire' => true, 'printLabel' => true, 'installComponent' => true, 'sendToMaintenance' => true]],
-        'technician on deployed' => ['technician', fn () => Asset::factory()->deployed()->create(), ['update' => false, 'tag' => false, 'checkout' => false, 'checkin' => true, 'retire' => false, 'printLabel' => true, 'installComponent' => true, 'sendToMaintenance' => true]],
-        'viewer on ready' => ['viewer', fn () => Asset::factory()->create(), ['update' => false, 'tag' => false, 'checkout' => false, 'checkin' => false, 'retire' => false, 'printLabel' => true, 'installComponent' => false, 'sendToMaintenance' => false]],
-        'admin on retired' => ['admin', fn () => Asset::factory()->retired()->create(), ['update' => false, 'tag' => false, 'checkout' => false, 'checkin' => false, 'retire' => false, 'printLabel' => true, 'installComponent' => false, 'sendToMaintenance' => false]],
+        'admin on pending' => ['admin', fn () => Asset::factory()->pending()->create(), ['update' => true, 'tag' => true, 'checkout' => false, 'checkin' => false, 'retire' => false, 'installComponent' => true, 'sendToMaintenance' => false]],
+        'admin on ready' => ['admin', fn () => Asset::factory()->create(), ['update' => true, 'tag' => false, 'checkout' => true, 'checkin' => false, 'retire' => true, 'installComponent' => true, 'sendToMaintenance' => true]],
+        'technician on deployed' => ['technician', fn () => Asset::factory()->deployed()->create(), ['update' => false, 'tag' => false, 'checkout' => false, 'checkin' => true, 'retire' => false, 'installComponent' => true, 'sendToMaintenance' => true]],
+        'viewer on ready' => ['viewer', fn () => Asset::factory()->create(), ['update' => false, 'tag' => false, 'checkout' => false, 'checkin' => false, 'retire' => false, 'installComponent' => false, 'sendToMaintenance' => false]],
+        'admin on retired' => ['admin', fn () => Asset::factory()->retired()->create(), ['update' => false, 'tag' => false, 'checkout' => false, 'checkin' => false, 'retire' => false, 'installComponent' => false, 'sendToMaintenance' => false]],
     ]);
 
-    it('loads active employees only when the checkout dialog asks for them', function (): void {
-        $technician = userWithRole(Role::Technician);
-        $asset = Asset::factory()->create();
-        Employee::factory()->count(2)->create();
-        $resigned = Employee::factory()->resigned()->create();
-        $activeCount = Employee::active()->count();
+    it('shows the asset QR code on the detail page', function (): void {
+        $asset = Asset::factory()->pending()->create();
 
-        actingAs($technician)->get("/assets/{$asset->id}")
+        actingAs(userWithRole(Role::Viewer))->get("/assets/{$asset->id}")
             ->assertInertia(fn (Assert $page) => $page
-                ->missing('employees')
-                ->reloadOnly('employees', fn (Assert $reload) => $reload
-                    ->has('employees', $activeCount)
-                    ->where('employees', fn (iterable $employees): bool => ! in_array(
-                        $resigned->id,
-                        array_column(is_array($employees) ? $employees : iterator_to_array($employees), 'id'),
-                        true,
-                    ))));
+                ->where('asset.qr_svg', fn (string $svg): bool => str_starts_with($svg, '<svg'))
+                ->missing('employees'));
     });
 });
 
